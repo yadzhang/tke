@@ -19,13 +19,15 @@
 package util
 
 import (
+	"fmt"
+
 	sets "k8s.io/apimachinery/pkg/util/sets"
 	"tkestack.io/tke/api/auth"
 )
 
 func InSubjects(subject auth.Subject, slice []auth.Subject) bool {
 	for _, s := range slice {
-		if subject.ID == s.ID {
+		if subject.ID == s.ID && subject.ProjectID == s.ProjectID {
 			return true
 		}
 	}
@@ -36,8 +38,10 @@ func RemoveDuplicateSubjects(slice []auth.Subject) []auth.Subject {
 	var ret []auth.Subject
 	idSet := sets.String{}
 	for _, s := range slice {
-		if !idSet.Has(s.ID) {
+		key := fmt.Sprintf("%s%s", s.ProjectID, s.ID)
+		if !idSet.Has(key) {
 			ret = append(ret, s)
+			idSet.Insert(key)
 		}
 	}
 	return ret

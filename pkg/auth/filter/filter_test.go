@@ -21,13 +21,16 @@ package filter
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
+	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/apiserver/pkg/authorization/authorizer"
 	genericrequest "k8s.io/apiserver/pkg/endpoints/request"
 
 	"tkestack.io/tke/api/business"
 	"tkestack.io/tke/api/registry"
+	"tkestack.io/tke/pkg/apiserver/filter"
 )
 
 type testCase struct {
@@ -136,6 +139,25 @@ func TestConvertTKEAttributes(t *testing.T) {
 			},
 		},
 		{
+			//GET -H "X-TKE-ProjectID: xxx" /business.tkestack.io/v1/namespaces/demo/namespace/demo
+			ctx: contextWithProject(context.Background()),
+			attr: &authorizer.AttributesRecord{
+				Verb:            "get",
+				Namespace:       "demo",
+				APIGroup:        business.GroupName,
+				ResourceRequest: true,
+				Resource:        "namespaces",
+				Name:            "demo",
+				Subresource:     "",
+				User:            &user.DefaultInfo{},
+			},
+			expect: &authorizer.AttributesRecord{
+				Verb:     "getNamespace",
+				Resource: "project:demo/namespace:demo",
+				User:     &user.DefaultInfo{},
+			},
+		},
+		{
 			ctx: context.Background(),
 			attr: &authorizer.AttributesRecord{
 				Verb:            "list",
@@ -149,7 +171,26 @@ func TestConvertTKEAttributes(t *testing.T) {
 				Resource: "project:demo/namespace:*",
 			},
 		},
+
 		{
+			//GET -H "X-TKE-ProjectID: xxx" /business.tkestack.io/v1/namespaces/demo/namespaces
+			ctx: contextWithProject(context.Background()),
+			attr: &authorizer.AttributesRecord{
+				Verb:            "list",
+				Namespace:       "demo",
+				APIGroup:        business.GroupName,
+				ResourceRequest: true,
+				Resource:        "namespaces",
+				User:            &user.DefaultInfo{},
+			},
+			expect: &authorizer.AttributesRecord{
+				Verb:     "listNamespaces",
+				Resource: "project:demo/namespace:*",
+				User:     &user.DefaultInfo{},
+			},
+		},
+		{
+			//GET /registry.tkestack.io/v1/namespaces/
 			ctx: context.Background(),
 			attr: &authorizer.AttributesRecord{
 				Verb:            "list",
@@ -163,6 +204,7 @@ func TestConvertTKEAttributes(t *testing.T) {
 			},
 		},
 		{
+			//GET /registry.tkestack.io/v1/namespaces/rns-57g8dc9v/repositories
 			ctx: context.Background(),
 			attr: &authorizer.AttributesRecord{
 				Verb:            "list",
@@ -177,6 +219,7 @@ func TestConvertTKEAttributes(t *testing.T) {
 			},
 		},
 		{
+			//GET -H "X-TKE-ClusterName: xxx" /apps/v1/namespaces/demo/deployments
 			ctx: contextWithCluster(context.Background()),
 			attr: &authorizer.AttributesRecord{
 				Verb:            "list",
@@ -188,6 +231,27 @@ func TestConvertTKEAttributes(t *testing.T) {
 			expect: &authorizer.AttributesRecord{
 				Verb:     "listDeployments",
 				Resource: fmt.Sprintf("cluster:%s/namespace:demo/deployment:*", clusterName),
+			},
+		},
+		{
+			//GET -H "X-TKE-ClusterName: xxx" -H "X-TKE-ProjectID: xxx" /apps/v1/namespaces/demo/deployments
+			ctx: contextWithProject(contextWithCluster(context.Background())),
+			attr: &authorizer.AttributesRecord{
+				Verb:            "list",
+				Namespace:       "demo",
+				ResourceRequest: true,
+				Resource:        "deployments",
+				Subresource:     "",
+				User:            &user.DefaultInfo{},
+			},
+			expect: &authorizer.AttributesRecord{
+				Verb:     "listDeployments",
+				Resource: fmt.Sprintf("cluster:%s/namespace:demo/deployment:*", clusterName),
+				User: &user.DefaultInfo{
+					Extra: map[string][]string{
+						filter.ProjectIDKey: {projectID},
+					},
+				},
 			},
 		},
 		{
@@ -247,25 +311,33 @@ func TestConvertTKEAttributes(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
+	for i, testCase := range testCases {
 		result := ConvertTKEAttributes(testCase.ctx, testCase.attr)
-		if !compareAttributesVerbAndRes(result, testCase.expect) {
-			t.Errorf("expect attributes %v, but got %v", testCase.expect, result)
+		if !compare(result, testCase.expect) {
+			t.Fatalf("expect attributes %v, but got %v", testCase.expect, result)
 		}
 	}
 }
 
-func compareAttributesVerbAndRes(a authorizer.Attributes, b authorizer.Attributes) bool {
-	if a.GetVerb() == b.GetVerb() && a.GetResource() == b.GetResource() {
+func compare(a authorizer.Attributes, b authorizer.Attributes) bool {
+	if a.GetVerb() == b.GetVerb() && a.GetResource() == b.GetResource() && reflect.DeepEqual(a.GetUser(), b.GetUser()) {
 		return true
 	}
 
 	return false
 }
 
-const clusterContextKey = "clusterName"
-const clusterName = "cls-82qkvzgp"
+const (
+	clusterContextKey = "clusterName"
+	clusterName       = "cls-82qkvzgp"
+	projectID         = "prj-82qkvzgp"
+	projectContextKey = "projectID"
+)
 
 func contextWithCluster(ctx context.Context) context.Context {
 	return genericrequest.WithValue(ctx, clusterContextKey, clusterName)
+}
+
+func contextWithProject(ctx context.Context) context.Context {
+	return genericrequest.WithValue(ctx, projectContextKey, projectID)
 }

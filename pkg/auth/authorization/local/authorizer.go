@@ -23,6 +23,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	genericfilter "tkestack.io/tke/pkg/apiserver/filter"
+
 	"github.com/casbin/casbin/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apiserver/pkg/authorization/authorizer"
@@ -63,14 +65,21 @@ func (a *Authorizer) Authorize(ctx context.Context, attr authorizer.Attributes) 
 	action := attr.GetVerb()
 	resource := attr.GetResource()
 	var (
-		tenantID string
-		debug    bool
+		tenantID  string
+		projectID string
+		debug     bool
 	)
 	extra := attr.GetUser().GetExtra()
 	if len(extra) > 0 {
 		if tenantIDs, ok := extra[genericoidc.TenantIDKey]; ok {
 			if len(tenantIDs) > 0 {
 				tenantID = tenantIDs[0]
+			}
+		}
+
+		if projectIDs, ok := extra[genericfilter.ProjectIDKey]; ok {
+			if len(projectIDs) > 0 {
+				projectID = projectIDs[0]
 			}
 		}
 

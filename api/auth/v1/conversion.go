@@ -91,6 +91,7 @@ func AddFieldLabelConversionsForPolicy(scheme *runtime.Scheme) error {
 			switch label {
 			case "spec.tenantID",
 				"spec.username",
+				"spec.projectID",
 				"spec.category",
 				"spec.displayName",
 				"spec.type",
@@ -168,6 +169,7 @@ func AddFieldLabelConversionsForLocalGroup(scheme *runtime.Scheme) error {
 			switch label {
 			case "spec.displayName",
 				"spec.tenantID",
+				"spec.projectID",
 				"spec.username",
 				"keyword",
 				"metadata.name":
@@ -187,6 +189,7 @@ func AddFieldLabelConversionsForRole(scheme *runtime.Scheme) error {
 			switch label {
 			case "spec.displayName",
 				"spec.tenantID",
+				"spec.projectID",
 				"spec.username",
 				"keyword",
 				"metadata.name":
@@ -223,6 +226,7 @@ func AddFieldLabelConversionsForGroup(scheme *runtime.Scheme) error {
 			switch label {
 			case "keyword",
 				"limit",
+				"spec.projectID",
 				"spec.tenantID":
 				return label, value, nil
 			default:

@@ -18,7 +18,9 @@
 
 package util
 
-import "tkestack.io/tke/api/auth"
+import (
+	"tkestack.io/tke/api/auth"
+)
 
 func ConvertPolicyToRuleArray(policy *auth.Policy) [][]string {
 	var rules [][]string

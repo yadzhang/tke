@@ -305,6 +305,8 @@ message GroupList {
 message GroupSpec {
   optional string id = 1;
 
+  optional string project = 5;
+
   optional string displayName = 2;
 
   optional string tenantID = 3;
@@ -375,6 +377,8 @@ message LocalGroupList {
 // LocalGroupSpec is a description of group.
 message LocalGroupSpec {
   repeated string finalizers = 1;
+
+  optional string project = 6;
 
   optional string displayName = 2;
 
@@ -507,9 +511,12 @@ message PolicySpec {
 
   optional string tenantID = 1;
 
+  // The project of policy belong to, if empty, the policy is platform-scoped.
   optional string category = 9;
 
   optional string type = 10;
+
+  optional string scope = 11;
 
   optional string username = 2;
 
@@ -593,6 +600,8 @@ message RoleList {
 message RoleSpec {
   repeated string finalizers = 1;
 
+  optional string projectID = 7;
+
   optional string displayName = 2;
 
   optional string tenantID = 3;
@@ -671,6 +680,8 @@ message Subject {
   optional string id = 1;
 
   optional string name = 2;
+
+  optional string projectID = 3;
 }
 
 // SubjectAccessReview checks whether or not a user or group can perform an action.  Not filling in a

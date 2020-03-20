@@ -20,6 +20,8 @@ package storage
 
 import (
 	"context"
+
+	"tkestack.io/tke/pkg/apiserver/filter"
 	"tkestack.io/tke/pkg/auth/util"
 
 	"tkestack.io/tke/pkg/util/log"
@@ -56,6 +58,7 @@ func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createVali
 		return nil, errors.NewBadRequest("unable to get request info from context")
 	}
 
+	projectID := filter.ProjectIDFrom(ctx)
 	bind := obj.(*auth.Binding)
 	polObj, err := r.policyStore.Get(ctx, requestInfo.Name, &metav1.GetOptions{})
 	if err != nil {
@@ -64,12 +67,16 @@ func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createVali
 	policy := polObj.(*auth.Policy)
 
 	for _, sub := range bind.Users {
+
+		sub.ProjectID = projectID
+
 		if !util.InSubjects(sub, policy.Status.Users) {
 			policy.Status.Users = append(policy.Status.Users, sub)
 		}
 	}
 
 	for _, sub := range bind.Groups {
+		sub.ProjectID = projectID
 		if !util.InSubjects(sub, policy.Status.Groups) {
 			sub.Name = ""
 			policy.Status.Groups = append(policy.Status.Groups, sub)
@@ -77,6 +84,5 @@ func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createVali
 	}
 
 	log.Info("bind policy subjects", log.String("policy", policy.Name), log.Any("users", policy.Status.Users), log.Any("groups", policy.Status.Groups))
-
 	return r.authClient.Policies().UpdateStatus(policy)
 }

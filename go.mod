@@ -101,5 +101,6 @@ require (
 	k8s.io/kube-aggregator v0.17.0
 	k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a
 	k8s.io/kubectl v0.17.0 // indirect
+	k8s.io/kubernetes v1.13.0
 	k8s.io/utils v0.0.0-20191114184206-e782cd3c129f
 )

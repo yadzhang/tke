@@ -160,6 +160,9 @@ type LocalGroupSpec struct {
 	DisplayName string
 	TenantID    string
 
+	// The project of policy belong to, if empty, the policy is platform-scoped.
+	ProjectID string
+
 	// Username is Creator
 	Username    string
 	Description string
@@ -226,6 +229,9 @@ type Group struct {
 
 // GroupSpec is a description of an Group.
 type GroupSpec struct {
+
+	// The project of policy belong to, if empty, the policy is platform-scoped.
+	ProjectID   string
 	ID          string
 	DisplayName string
 	TenantID    string
@@ -459,6 +465,14 @@ const (
 	PolicyDefault PolicyType = "default"
 )
 
+// PolicyScope defines the policy is belong to platform or project.
+type PolicyScope string
+
+const (
+	PolicyPlatform PolicyScope = "platform"
+	PolicyProject  PolicyScope = "project"
+)
+
 // PolicySpec is a description of a policy.
 type PolicySpec struct {
 	Finalizers []FinalizerName
@@ -467,6 +481,8 @@ type PolicySpec struct {
 	TenantID    string
 	Category    string
 	Type        PolicyType
+	Scope       PolicyScope
+
 	// Creator
 	Username    string
 	Description string
@@ -567,8 +583,9 @@ type Binding struct {
 
 // Subject references a user can specify by id or name.
 type Subject struct {
-	ID   string
-	Name string
+	ID        string
+	Name      string
+	ProjectID string
 }
 
 // +genclient
@@ -613,6 +630,9 @@ type RoleSpec struct {
 
 	DisplayName string
 	TenantID    string
+
+	// The project of policy belong to, if empty, the policy is platform-scoped.
+	ProjectID string
 
 	// Username is Creator
 	Username    string

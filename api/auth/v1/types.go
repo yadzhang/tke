@@ -169,6 +169,7 @@ const (
 type LocalGroupSpec struct {
 	Finalizers []FinalizerName `json:"finalizers,omitempty" protobuf:"bytes,1,rep,name=finalizers,casttype=FinalizerName"`
 
+	ProjectID   string `json:"projectID" protobuf:"bytes,6,opt,name=project"`
 	DisplayName string `json:"displayName" protobuf:"bytes,2,opt,name=displayName"`
 	TenantID    string `json:"tenantID" protobuf:"bytes,3,opt,name=tenantID"`
 
@@ -238,6 +239,7 @@ type Group struct {
 // GroupSpec is a description of a Group.
 type GroupSpec struct {
 	ID          string `json:"id" protobuf:"bytes,1,opt,name=id"`
+	ProjectID   string `json:"projectID" protobuf:"bytes,5,opt,name=project"`
 	DisplayName string `json:"displayName" protobuf:"bytes,2,opt,name=displayName"`
 	TenantID    string `json:"tenantID" protobuf:"bytes,3,opt,name=tenantID"`
 	Description string `json:"description" protobuf:"bytes,4,opt,name=description"`
@@ -487,15 +489,25 @@ const (
 	PolicyDefault PolicyType = "default"
 )
 
+// PolicyScope defines the policy is belong to platform or project.
+type PolicyScope string
+
+const (
+	PolicyPlatform PolicyScope = "platform"
+	PolicyProject  PolicyScope = "project"
+)
+
 // PolicySpec is a description of a policy.
 type PolicySpec struct {
 	Finalizers []FinalizerName `json:"finalizers,omitempty" protobuf:"bytes,8,rep,name=finalizers,casttype=FinalizerName"`
 
-	DisplayName string     `json:"displayName" protobuf:"bytes,7,opt,name=displayName"`
-	TenantID    string     `json:"tenantID" protobuf:"bytes,1,opt,name=tenantID"`
-	Category    string     `json:"category" protobuf:"bytes,9,opt,name=category"`
-	Type        PolicyType `json:"type" protobuf:"varint,10,opt,name=type,casttype=PolicyType"`
-	Username    string     `json:"username" protobuf:"bytes,2,opt,name=username"`
+	DisplayName string `json:"displayName" protobuf:"bytes,7,opt,name=displayName"`
+	TenantID    string `json:"tenantID" protobuf:"bytes,1,opt,name=tenantID"`
+	// The project of policy belong to, if empty, the policy is platform-scoped.
+	Category string      `json:"category" protobuf:"bytes,9,opt,name=category"`
+	Type     PolicyType  `json:"type" protobuf:"varint,10,opt,name=type,casttype=PolicyType"`
+	Scope    PolicyScope `json:"scope" protobuf:"bytes,11,opt,name=scope,casttype=PolicyScope"`
+	Username string      `json:"username" protobuf:"bytes,2,opt,name=username"`
 	// +optional
 	Description string `json:"description" protobuf:"bytes,3,opt,name=description"`
 
@@ -598,8 +610,9 @@ type Binding struct {
 
 // Subject references a user can specify by id or name.
 type Subject struct {
-	ID   string `json:"id" protobuf:"bytes,1,opt,name=id"`
-	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
+	ID        string `json:"id" protobuf:"bytes,1,opt,name=id"`
+	Name      string `json:"name" protobuf:"bytes,2,opt,name=name"`
+	ProjectID string `json:"projectID" protobuf:"bytes,3,opt,name=projectID"`
 }
 
 // +genclient
@@ -642,6 +655,7 @@ const (
 type RoleSpec struct {
 	Finalizers []FinalizerName `json:"finalizers,omitempty" protobuf:"bytes,1,rep,name=finalizers,casttype=FinalizerName"`
 
+	ProjectID   string `json:"projectID" protobuf:"bytes,7,opt,name=projectID"`
 	DisplayName string `json:"displayName" protobuf:"bytes,2,opt,name=displayName"`
 	TenantID    string `json:"tenantID" protobuf:"bytes,3,opt,name=tenantID"`
 

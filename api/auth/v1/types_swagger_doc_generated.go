@@ -399,7 +399,8 @@ func (PolicyList) SwaggerDoc() map[string]string {
 }
 
 var map_PolicySpec = map[string]string{
-	"": "PolicySpec is a description of a policy.",
+	"":         "PolicySpec is a description of a policy.",
+	"category": "The project of policy belong to, if empty, the policy is platform-scoped.",
 }
 
 func (PolicySpec) SwaggerDoc() map[string]string {

@@ -865,8 +865,28 @@ func Convert_auth_AllowedStatus_To_v1_AllowedStatus(in *auth.AllowedStatus, out 
 }
 
 func autoConvert_v1_Binding_To_auth_Binding(in *Binding, out *auth.Binding, s conversion.Scope) error {
-	out.Users = *(*[]auth.Subject)(unsafe.Pointer(&in.Users))
-	out.Groups = *(*[]auth.Subject)(unsafe.Pointer(&in.Groups))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]auth.Subject, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Subject_To_auth_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
+	if in.Groups != nil {
+		in, out := &in.Groups, &out.Groups
+		*out = make([]auth.Subject, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Subject_To_auth_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Groups = nil
+	}
 	return nil
 }
 
@@ -876,8 +896,28 @@ func Convert_v1_Binding_To_auth_Binding(in *Binding, out *auth.Binding, s conver
 }
 
 func autoConvert_auth_Binding_To_v1_Binding(in *auth.Binding, out *Binding, s conversion.Scope) error {
-	out.Users = *(*[]Subject)(unsafe.Pointer(&in.Users))
-	out.Groups = *(*[]Subject)(unsafe.Pointer(&in.Groups))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]Subject, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Subject_To_v1_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
+	if in.Groups != nil {
+		in, out := &in.Groups, &out.Groups
+		*out = make([]Subject, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Subject_To_v1_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Groups = nil
+	}
 	return nil
 }
 
@@ -1118,7 +1158,17 @@ func Convert_auth_Group_To_v1_Group(in *auth.Group, out *Group, s conversion.Sco
 
 func autoConvert_v1_GroupList_To_auth_GroupList(in *GroupList, out *auth.GroupList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]auth.Group)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]auth.Group, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Group_To_auth_Group(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -1129,7 +1179,17 @@ func Convert_v1_GroupList_To_auth_GroupList(in *GroupList, out *auth.GroupList, 
 
 func autoConvert_auth_GroupList_To_v1_GroupList(in *auth.GroupList, out *GroupList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]Group)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]Group, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Group_To_v1_Group(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -1140,6 +1200,7 @@ func Convert_auth_GroupList_To_v1_GroupList(in *auth.GroupList, out *GroupList, 
 
 func autoConvert_v1_GroupSpec_To_auth_GroupSpec(in *GroupSpec, out *auth.GroupSpec, s conversion.Scope) error {
 	out.ID = in.ID
+	out.ProjectID = in.ProjectID
 	out.DisplayName = in.DisplayName
 	out.TenantID = in.TenantID
 	out.Description = in.Description
@@ -1152,6 +1213,7 @@ func Convert_v1_GroupSpec_To_auth_GroupSpec(in *GroupSpec, out *auth.GroupSpec, 
 }
 
 func autoConvert_auth_GroupSpec_To_v1_GroupSpec(in *auth.GroupSpec, out *GroupSpec, s conversion.Scope) error {
+	out.ProjectID = in.ProjectID
 	out.ID = in.ID
 	out.DisplayName = in.DisplayName
 	out.TenantID = in.TenantID
@@ -1165,7 +1227,17 @@ func Convert_auth_GroupSpec_To_v1_GroupSpec(in *auth.GroupSpec, out *GroupSpec, 
 }
 
 func autoConvert_v1_GroupStatus_To_auth_GroupStatus(in *GroupStatus, out *auth.GroupStatus, s conversion.Scope) error {
-	out.Users = *(*[]auth.Subject)(unsafe.Pointer(&in.Users))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]auth.Subject, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Subject_To_auth_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
 	return nil
 }
 
@@ -1175,7 +1247,17 @@ func Convert_v1_GroupStatus_To_auth_GroupStatus(in *GroupStatus, out *auth.Group
 }
 
 func autoConvert_auth_GroupStatus_To_v1_GroupStatus(in *auth.GroupStatus, out *GroupStatus, s conversion.Scope) error {
-	out.Users = *(*[]Subject)(unsafe.Pointer(&in.Users))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]Subject, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Subject_To_v1_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
 	return nil
 }
 
@@ -1292,7 +1374,17 @@ func Convert_auth_LocalGroup_To_v1_LocalGroup(in *auth.LocalGroup, out *LocalGro
 
 func autoConvert_v1_LocalGroupList_To_auth_LocalGroupList(in *LocalGroupList, out *auth.LocalGroupList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]auth.LocalGroup)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]auth.LocalGroup, len(*in))
+		for i := range *in {
+			if err := Convert_v1_LocalGroup_To_auth_LocalGroup(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -1303,7 +1395,17 @@ func Convert_v1_LocalGroupList_To_auth_LocalGroupList(in *LocalGroupList, out *a
 
 func autoConvert_auth_LocalGroupList_To_v1_LocalGroupList(in *auth.LocalGroupList, out *LocalGroupList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]LocalGroup)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]LocalGroup, len(*in))
+		for i := range *in {
+			if err := Convert_auth_LocalGroup_To_v1_LocalGroup(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -1314,6 +1416,7 @@ func Convert_auth_LocalGroupList_To_v1_LocalGroupList(in *auth.LocalGroupList, o
 
 func autoConvert_v1_LocalGroupSpec_To_auth_LocalGroupSpec(in *LocalGroupSpec, out *auth.LocalGroupSpec, s conversion.Scope) error {
 	out.Finalizers = *(*[]auth.FinalizerName)(unsafe.Pointer(&in.Finalizers))
+	out.ProjectID = in.ProjectID
 	out.DisplayName = in.DisplayName
 	out.TenantID = in.TenantID
 	out.Username = in.Username
@@ -1330,6 +1433,7 @@ func autoConvert_auth_LocalGroupSpec_To_v1_LocalGroupSpec(in *auth.LocalGroupSpe
 	out.Finalizers = *(*[]FinalizerName)(unsafe.Pointer(&in.Finalizers))
 	out.DisplayName = in.DisplayName
 	out.TenantID = in.TenantID
+	out.ProjectID = in.ProjectID
 	out.Username = in.Username
 	out.Description = in.Description
 	return nil
@@ -1342,7 +1446,17 @@ func Convert_auth_LocalGroupSpec_To_v1_LocalGroupSpec(in *auth.LocalGroupSpec, o
 
 func autoConvert_v1_LocalGroupStatus_To_auth_LocalGroupStatus(in *LocalGroupStatus, out *auth.LocalGroupStatus, s conversion.Scope) error {
 	out.Phase = auth.GroupPhase(in.Phase)
-	out.Users = *(*[]auth.Subject)(unsafe.Pointer(&in.Users))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]auth.Subject, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Subject_To_auth_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
 	return nil
 }
 
@@ -1353,7 +1467,17 @@ func Convert_v1_LocalGroupStatus_To_auth_LocalGroupStatus(in *LocalGroupStatus, 
 
 func autoConvert_auth_LocalGroupStatus_To_v1_LocalGroupStatus(in *auth.LocalGroupStatus, out *LocalGroupStatus, s conversion.Scope) error {
 	out.Phase = GroupPhase(in.Phase)
-	out.Users = *(*[]Subject)(unsafe.Pointer(&in.Users))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]Subject, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Subject_To_v1_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
 	return nil
 }
 
@@ -1594,7 +1718,17 @@ func Convert_auth_PolicyBinding_To_v1_PolicyBinding(in *auth.PolicyBinding, out 
 
 func autoConvert_v1_PolicyList_To_auth_PolicyList(in *PolicyList, out *auth.PolicyList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]auth.Policy)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]auth.Policy, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Policy_To_auth_Policy(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -1605,7 +1739,17 @@ func Convert_v1_PolicyList_To_auth_PolicyList(in *PolicyList, out *auth.PolicyLi
 
 func autoConvert_auth_PolicyList_To_v1_PolicyList(in *auth.PolicyList, out *PolicyList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]Policy)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]Policy, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Policy_To_v1_Policy(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -1620,6 +1764,7 @@ func autoConvert_v1_PolicySpec_To_auth_PolicySpec(in *PolicySpec, out *auth.Poli
 	out.TenantID = in.TenantID
 	out.Category = in.Category
 	out.Type = auth.PolicyType(in.Type)
+	out.Scope = auth.PolicyScope(in.Scope)
 	out.Username = in.Username
 	out.Description = in.Description
 	if err := Convert_v1_Statement_To_auth_Statement(&in.Statement, &out.Statement, s); err != nil {
@@ -1640,6 +1785,7 @@ func autoConvert_auth_PolicySpec_To_v1_PolicySpec(in *auth.PolicySpec, out *Poli
 	out.TenantID = in.TenantID
 	out.Category = in.Category
 	out.Type = PolicyType(in.Type)
+	out.Scope = PolicyScope(in.Scope)
 	out.Username = in.Username
 	out.Description = in.Description
 	if err := Convert_auth_Statement_To_v1_Statement(&in.Statement, &out.Statement, s); err != nil {
@@ -1656,8 +1802,28 @@ func Convert_auth_PolicySpec_To_v1_PolicySpec(in *auth.PolicySpec, out *PolicySp
 
 func autoConvert_v1_PolicyStatus_To_auth_PolicyStatus(in *PolicyStatus, out *auth.PolicyStatus, s conversion.Scope) error {
 	out.Phase = auth.PolicyPhase(in.Phase)
-	out.Users = *(*[]auth.Subject)(unsafe.Pointer(&in.Users))
-	out.Groups = *(*[]auth.Subject)(unsafe.Pointer(&in.Groups))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]auth.Subject, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Subject_To_auth_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
+	if in.Groups != nil {
+		in, out := &in.Groups, &out.Groups
+		*out = make([]auth.Subject, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Subject_To_auth_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Groups = nil
+	}
 	return nil
 }
 
@@ -1668,8 +1834,28 @@ func Convert_v1_PolicyStatus_To_auth_PolicyStatus(in *PolicyStatus, out *auth.Po
 
 func autoConvert_auth_PolicyStatus_To_v1_PolicyStatus(in *auth.PolicyStatus, out *PolicyStatus, s conversion.Scope) error {
 	out.Phase = PolicyPhase(in.Phase)
-	out.Users = *(*[]Subject)(unsafe.Pointer(&in.Users))
-	out.Groups = *(*[]Subject)(unsafe.Pointer(&in.Groups))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]Subject, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Subject_To_v1_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
+	if in.Groups != nil {
+		in, out := &in.Groups, &out.Groups
+		*out = make([]Subject, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Subject_To_v1_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Groups = nil
+	}
 	return nil
 }
 
@@ -1744,7 +1930,17 @@ func Convert_auth_Role_To_v1_Role(in *auth.Role, out *Role, s conversion.Scope) 
 
 func autoConvert_v1_RoleList_To_auth_RoleList(in *RoleList, out *auth.RoleList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]auth.Role)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]auth.Role, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Role_To_auth_Role(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -1755,7 +1951,17 @@ func Convert_v1_RoleList_To_auth_RoleList(in *RoleList, out *auth.RoleList, s co
 
 func autoConvert_auth_RoleList_To_v1_RoleList(in *auth.RoleList, out *RoleList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]Role)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]Role, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Role_To_v1_Role(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -1766,6 +1972,7 @@ func Convert_auth_RoleList_To_v1_RoleList(in *auth.RoleList, out *RoleList, s co
 
 func autoConvert_v1_RoleSpec_To_auth_RoleSpec(in *RoleSpec, out *auth.RoleSpec, s conversion.Scope) error {
 	out.Finalizers = *(*[]auth.FinalizerName)(unsafe.Pointer(&in.Finalizers))
+	out.ProjectID = in.ProjectID
 	out.DisplayName = in.DisplayName
 	out.TenantID = in.TenantID
 	out.Username = in.Username
@@ -1783,6 +1990,7 @@ func autoConvert_auth_RoleSpec_To_v1_RoleSpec(in *auth.RoleSpec, out *RoleSpec, 
 	out.Finalizers = *(*[]FinalizerName)(unsafe.Pointer(&in.Finalizers))
 	out.DisplayName = in.DisplayName
 	out.TenantID = in.TenantID
+	out.ProjectID = in.ProjectID
 	out.Username = in.Username
 	out.Description = in.Description
 	out.Policies = *(*[]string)(unsafe.Pointer(&in.Policies))
@@ -1796,8 +2004,28 @@ func Convert_auth_RoleSpec_To_v1_RoleSpec(in *auth.RoleSpec, out *RoleSpec, s co
 
 func autoConvert_v1_RoleStatus_To_auth_RoleStatus(in *RoleStatus, out *auth.RoleStatus, s conversion.Scope) error {
 	out.Phase = auth.RolePhase(in.Phase)
-	out.Users = *(*[]auth.Subject)(unsafe.Pointer(&in.Users))
-	out.Groups = *(*[]auth.Subject)(unsafe.Pointer(&in.Groups))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]auth.Subject, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Subject_To_auth_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
+	if in.Groups != nil {
+		in, out := &in.Groups, &out.Groups
+		*out = make([]auth.Subject, len(*in))
+		for i := range *in {
+			if err := Convert_v1_Subject_To_auth_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Groups = nil
+	}
 	return nil
 }
 
@@ -1808,8 +2036,28 @@ func Convert_v1_RoleStatus_To_auth_RoleStatus(in *RoleStatus, out *auth.RoleStat
 
 func autoConvert_auth_RoleStatus_To_v1_RoleStatus(in *auth.RoleStatus, out *RoleStatus, s conversion.Scope) error {
 	out.Phase = RolePhase(in.Phase)
-	out.Users = *(*[]Subject)(unsafe.Pointer(&in.Users))
-	out.Groups = *(*[]Subject)(unsafe.Pointer(&in.Groups))
+	if in.Users != nil {
+		in, out := &in.Users, &out.Users
+		*out = make([]Subject, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Subject_To_v1_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Users = nil
+	}
+	if in.Groups != nil {
+		in, out := &in.Groups, &out.Groups
+		*out = make([]Subject, len(*in))
+		for i := range *in {
+			if err := Convert_auth_Subject_To_v1_Subject(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Groups = nil
+	}
 	return nil
 }
 
@@ -1927,12 +2175,8 @@ func Convert_auth_Statement_To_v1_Statement(in *auth.Statement, out *Statement, 
 func autoConvert_v1_Subject_To_auth_Subject(in *Subject, out *auth.Subject, s conversion.Scope) error {
 	out.ID = in.ID
 	out.Name = in.Name
+	// WARNING: in.ProjectID requires manual conversion: does not exist in peer-type
 	return nil
-}
-
-// Convert_v1_Subject_To_auth_Subject is an autogenerated conversion function.
-func Convert_v1_Subject_To_auth_Subject(in *Subject, out *auth.Subject, s conversion.Scope) error {
-	return autoConvert_v1_Subject_To_auth_Subject(in, out, s)
 }
 
 func autoConvert_auth_Subject_To_v1_Subject(in *auth.Subject, out *Subject, s conversion.Scope) error {
