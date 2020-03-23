@@ -65,8 +65,11 @@ const (
 	// LocalIdentityFinalize is an internal finalizer values to LocalIdentity.
 	LocalIdentityFinalize FinalizerName = "localidentity"
 
-	// PolicyFinalize is an internal finalizer values to Policy.
+	// PolicyFinalize is an internal finalizer values to ProjectPolicy.
 	PolicyFinalize FinalizerName = "policy"
+
+	// BindingFinalize is an internal finalizer values to ProjectPolicy.
+	BindingFinalize FinalizerName = "projectpolicy"
 
 	// PolicyFinalize is an internal finalizer values to LocalGroup.
 	LocalGroupFinalize FinalizerName = "localgroup"
@@ -160,12 +163,11 @@ type LocalGroupSpec struct {
 	DisplayName string
 	TenantID    string
 
-	// The project of policy belong to, if empty, the policy is platform-scoped.
-	ProjectID string
-
 	// Username is Creator
 	Username    string
 	Description string
+
+	Extra map[string]string
 }
 
 // LocalGroupStatus represents information about the status of a group.
@@ -199,7 +201,8 @@ type UserSpec struct {
 	Email       string
 	PhoneNumber string
 	TenantID    string
-	Extra       map[string]string
+
+	Extra map[string]string
 }
 
 // +genclient:nonNamespaced
@@ -230,12 +233,11 @@ type Group struct {
 // GroupSpec is a description of an Group.
 type GroupSpec struct {
 
-	// The project of policy belong to, if empty, the policy is platform-scoped.
-	ProjectID   string
 	ID          string
 	DisplayName string
 	TenantID    string
 	Description string
+	Extra       map[string]string
 }
 
 // GroupStatus represents information about the status of a group.
@@ -425,7 +427,7 @@ const (
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Policy represents a policy document for access control.
+// ProjectPolicy represents a policy document for access control.
 type Policy struct {
 	metav1.TypeMeta
 	metav1.ObjectMeta
@@ -512,22 +514,70 @@ type PolicyStatus struct {
 	Groups []Subject
 }
 
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ProjectPolicy is a collection of subjects bond to policies in a project scope.
+type ProjectPolicy struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   ProjectPolicySpec
+	Status ProjectPolicyStatus
+}
+
+// ProjectPolicySpec defines the desired identities of ProjectPolicySpec document in this set.
+type ProjectPolicySpec struct {
+	Finalizers []FinalizerName
+	TenantID   string
+	ProjectID  string
+	PolicyID   string
+	Users      []Subject
+	Groups     []Subject
+}
+
+// BindingPhase defines the phase of ProjectPolicy constructor.
+type BindingPhase string
+
+const (
+	BindingActive BindingPhase = "Active"
+	// RoleTerminating means the role is undergoing graceful termination.
+	BindingTerminating BindingPhase = "Terminating"
+)
+
+// ProjectPolicyStatus represents information about the status of a ProjectPolicy.
+type ProjectPolicyStatus struct {
+	Phase BindingPhase
+}
+
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ProjectPolicy is the whole list of all ProjectPolicys.
+type ProjectPolicyList struct {
+	metav1.TypeMeta
+	metav1.ListMeta
+	// List of policies.
+	Items []ProjectPolicy
+}
+
 const (
 	DefaultRuleModel = `
 [request_definition]
-r = sub, obj, act
+r = sub, dom, obj, act
 
 [policy_definition]
-p = sub, obj, act, eft
+p = sub, dom, obj, act
 
 [role_definition]
-g = _, _
+g = _, _, _
 
 [policy_effect]
 e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 
 [matchers]
-m = g(r.sub, p.sub)  && keyMatchCustom(r.obj, p.obj) && keyMatchCustom(r.act, p.act)
+m = g(r.sub, p.sub, p.dom)  && keyMatchCustom(r.obj, p.obj) && keyMatchCustom(r.act, p.act)
 `
 )
 
@@ -583,9 +633,8 @@ type Binding struct {
 
 // Subject references a user can specify by id or name.
 type Subject struct {
-	ID        string
-	Name      string
-	ProjectID string
+	ID   string
+	Name string
 }
 
 // +genclient
@@ -628,11 +677,9 @@ const (
 type RoleSpec struct {
 	Finalizers []FinalizerName
 
+	ProjectID   string
 	DisplayName string
 	TenantID    string
-
-	// The project of policy belong to, if empty, the policy is platform-scoped.
-	ProjectID string
 
 	// Username is Creator
 	Username    string
@@ -663,6 +710,13 @@ type PolicyBinding struct {
 	// Policies holds the policies will bind or unbind to the role.
 	// +optional
 	Policies []string
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// Dummy is a empty struct.
+type Dummy struct {
+	metav1.TypeMeta
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

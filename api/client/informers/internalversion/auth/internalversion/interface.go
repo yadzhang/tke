@@ -46,6 +46,8 @@ type Interface interface {
 	LocalIdentities() LocalIdentityInformer
 	// Policies returns a PolicyInformer.
 	Policies() PolicyInformer
+	// ProjectPolicies returns a ProjectPolicyInformer.
+	ProjectPolicies() ProjectPolicyInformer
 	// Roles returns a RoleInformer.
 	Roles() RoleInformer
 	// Rules returns a RuleInformer.
@@ -113,6 +115,11 @@ func (v *version) LocalIdentities() LocalIdentityInformer {
 // Policies returns a PolicyInformer.
 func (v *version) Policies() PolicyInformer {
 	return &policyInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// ProjectPolicies returns a ProjectPolicyInformer.
+func (v *version) ProjectPolicies() ProjectPolicyInformer {
+	return &projectPolicyInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // Roles returns a RoleInformer.

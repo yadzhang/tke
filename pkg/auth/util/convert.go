@@ -26,7 +26,7 @@ func ConvertPolicyToRuleArray(policy *auth.Policy) [][]string {
 	var rules [][]string
 	for _, act := range policy.Spec.Statement.Actions {
 		for _, res := range policy.Spec.Statement.Resources {
-			rule := []string{policy.Name, res, act, string(policy.Spec.Statement.Effect)}
+			rule := []string{policy.Name, "*", res, act, string(policy.Spec.Statement.Effect)}
 			rules = append(rules, rule)
 		}
 	}

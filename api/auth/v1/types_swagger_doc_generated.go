@@ -218,6 +218,14 @@ func (ConfigMapList) SwaggerDoc() map[string]string {
 	return map_ConfigMapList
 }
 
+var map_Dummy = map[string]string{
+	"": "Dummy is a empty struct.",
+}
+
+func (Dummy) SwaggerDoc() map[string]string {
+	return map_Dummy
+}
+
 var map_Group = map[string]string{
 	"":     "Group is an object that contains the metadata about identify about tke local idp or third-party idp.",
 	"spec": "Spec defines the desired identities of group in this set.",
@@ -399,8 +407,7 @@ func (PolicyList) SwaggerDoc() map[string]string {
 }
 
 var map_PolicySpec = map[string]string{
-	"":         "PolicySpec is a description of a policy.",
-	"category": "The project of policy belong to, if empty, the policy is platform-scoped.",
+	"": "PolicySpec is a description of a policy.",
 }
 
 func (PolicySpec) SwaggerDoc() map[string]string {
@@ -415,6 +422,40 @@ var map_PolicyStatus = map[string]string{
 
 func (PolicyStatus) SwaggerDoc() map[string]string {
 	return map_PolicyStatus
+}
+
+var map_ProjectPolicy = map[string]string{
+	"": "ProjectPolicy is a collection of subjects bond to policies in a project scope.",
+}
+
+func (ProjectPolicy) SwaggerDoc() map[string]string {
+	return map_ProjectPolicy
+}
+
+var map_ProjectPolicyList = map[string]string{
+	"":      "ProjectPolicy is the whole list of all ProjectPolicys.",
+	"items": "List of policies.",
+}
+
+func (ProjectPolicyList) SwaggerDoc() map[string]string {
+	return map_ProjectPolicyList
+}
+
+var map_ProjectPolicySpec = map[string]string{
+	"":           "ProjectPolicySpec defines the desired identities of ProjectPolicySpec document in this set.",
+	"finalizers": "Spec defines the desired identities of role document in this set.",
+}
+
+func (ProjectPolicySpec) SwaggerDoc() map[string]string {
+	return map_ProjectPolicySpec
+}
+
+var map_ProjectPolicyStatus = map[string]string{
+	"": "ProjectPolicyStatus represents information about the status of a ProjectPolicy.",
+}
+
+func (ProjectPolicyStatus) SwaggerDoc() map[string]string {
+	return map_ProjectPolicyStatus
 }
 
 var map_ResourceAttributes = map[string]string{

@@ -21,7 +21,6 @@ package storage
 import (
 	"context"
 
-	"tkestack.io/tke/pkg/apiserver/filter"
 	"tkestack.io/tke/pkg/auth/util"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -56,7 +55,6 @@ func (r *UnbindingREST) Create(ctx context.Context, obj runtime.Object, createVa
 	if !ok {
 		return nil, errors.NewBadRequest("unable to get request info from context")
 	}
-	projectID := filter.ProjectIDFrom(ctx)
 
 	bind := obj.(*auth.Binding)
 	polObj, err := r.groupStore.Get(ctx, requestInfo.Name, &metav1.GetOptions{})
@@ -66,7 +64,6 @@ func (r *UnbindingREST) Create(ctx context.Context, obj runtime.Object, createVa
 	group := polObj.(*auth.LocalGroup)
 	var remained []auth.Subject
 	for _, sub := range group.Status.Users {
-		sub.ProjectID = projectID
 		if !util.InSubjects(sub, bind.Users) {
 			remained = append(remained, sub)
 		}

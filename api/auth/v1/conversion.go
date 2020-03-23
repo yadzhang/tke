@@ -29,6 +29,7 @@ func addConversionFuncs(scheme *runtime.Scheme) error {
 		AddFieldLabelConversionsForLocalIdentity,
 		AddFieldLabelConversionsForAPIKey,
 		AddFieldLabelConversionsForPolicy,
+		AddFieldLabelConversionsForProjectPolicy,
 		AddFieldLabelConversionsForRule,
 		AddFieldLabelConversionsForCategory,
 		AddFieldLabelConversionsForLocalGroup,
@@ -91,12 +92,29 @@ func AddFieldLabelConversionsForPolicy(scheme *runtime.Scheme) error {
 			switch label {
 			case "spec.tenantID",
 				"spec.username",
-				"spec.projectID",
 				"spec.category",
 				"spec.displayName",
+				"spec.scope",
 				"spec.type",
 				"keyword",
 				"metadata.name":
+				return label, value, nil
+			default:
+				return "", "", fmt.Errorf("field label not supported: %s", label)
+			}
+		})
+}
+
+// AddFieldLabelConversionsForProjectPolicy adds a conversion function to convert
+// field selectors of ProjectPolicy from the given version to internal version
+// representation.
+func AddFieldLabelConversionsForProjectPolicy(scheme *runtime.Scheme) error {
+	return scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("ProjectPolicy"),
+		func(label, value string) (string, string, error) {
+			switch label {
+			case "spec.tenantID",
+				"spec.projectID",
+				"spec.policyID":
 				return label, value, nil
 			default:
 				return "", "", fmt.Errorf("field label not supported: %s", label)

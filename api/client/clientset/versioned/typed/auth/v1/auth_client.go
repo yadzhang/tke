@@ -38,6 +38,7 @@ type AuthV1Interface interface {
 	LocalGroupsGetter
 	LocalIdentitiesGetter
 	PoliciesGetter
+	ProjectPoliciesGetter
 	RolesGetter
 	RulesGetter
 	UsersGetter
@@ -86,6 +87,10 @@ func (c *AuthV1Client) LocalIdentities() LocalIdentityInterface {
 
 func (c *AuthV1Client) Policies() PolicyInterface {
 	return newPolicies(c)
+}
+
+func (c *AuthV1Client) ProjectPolicies() ProjectPolicyInterface {
+	return newProjectPolicies(c)
 }
 
 func (c *AuthV1Client) Roles() RoleInterface {

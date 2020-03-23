@@ -22,33 +22,28 @@ import (
 	"context"
 	"net/http"
 
+	"tkestack.io/tke/pkg/platform/apiserver/filter"
+
 	genericrequest "k8s.io/apiserver/pkg/endpoints/request"
 )
-
 
 const (
 	// ProjectIDKey defines the key representing the project id in the additional
 	// information mapping table of the user information.
 	ProjectIDKey = "projectid"
 
- 	projectContextKey = "projectID"
-
-	// projectIDHeaderKey is the header name of project
-	projectIDHeaderKey = "X-TKE-ProjectID"
-
+	projectContextKey = "projectID"
 )
-
 
 func WithProject(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		clusterName := req.Header.Get(projectIDHeaderKey)
+		clusterName := req.Header.Get(filter.ProjectNameHeaderKey)
 		if clusterName != "" {
 			req = req.WithContext(genericrequest.WithValue(req.Context(), projectContextKey, clusterName))
 		}
 		handler.ServeHTTP(w, req)
 	})
 }
-
 
 // ProjectIDFrom get the project id from request context.
 func ProjectIDFrom(ctx context.Context) string {

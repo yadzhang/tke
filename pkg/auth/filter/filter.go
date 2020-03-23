@@ -24,7 +24,6 @@ import (
 	"strings"
 	"unicode"
 
-	"k8s.io/apiserver/pkg/authentication/user"
 	"tkestack.io/tke/api/business"
 
 	"github.com/go-openapi/inflect"
@@ -211,11 +210,9 @@ func ConvertTKEAttributes(ctx context.Context, attr authorizer.Attributes) autho
 		tkeAttribs.Resource = resourceType
 	}
 
-	hasProjectSet := false
 	if tkeAttribs.Namespace != "" {
 		switch attr.GetAPIGroup() {
 		case business.GroupName:
-			hasProjectSet = true
 			tkeAttribs.Resource = fmt.Sprintf("project:%s/%s", tkeAttribs.Namespace, tkeAttribs.Resource)
 		case registry.GroupName:
 			tkeAttribs.Resource = fmt.Sprintf("registrynamespace:%s/%s", tkeAttribs.Namespace, tkeAttribs.Resource)
@@ -230,25 +227,12 @@ func ConvertTKEAttributes(ctx context.Context, attr authorizer.Attributes) autho
 		clusterName = filter.ClusterFrom(ctx)
 	}
 
+	if clusterName == "" {
+		clusterName = commonapiserverfilter.GetClusterFromGroups(attr.GetUser().GetGroups())
+	}
+
 	if clusterName != "" && resourceTypeSingle != "cluster" {
 		tkeAttribs.Resource = fmt.Sprintf("cluster:%s/%s", clusterName, tkeAttribs.Resource)
-	}
-
-	projectID := ""
-	if ctx != nil && len(commonapiserverfilter.ProjectIDFrom(ctx)) != 0 {
-		projectID = commonapiserverfilter.ProjectIDFrom(ctx)
-	}
-
-	// Set projectID into user extras for authorization.
-	if projectID != "" && resourceTypeSingle != "project" && !hasProjectSet {
-		if tkeAttribs.User != nil {
-			userInfo := tkeAttribs.GetUser().(*user.DefaultInfo)
-			if userInfo.Extra == nil {
-				userInfo.Extra = make(map[string][]string)
-			}
-			userInfo.Extra[commonapiserverfilter.ProjectIDKey] = []string{projectID}
-			tkeAttribs.User = userInfo
-		}
 	}
 
 	tkeAttribs.Subresource = subResource

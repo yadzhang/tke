@@ -21,7 +21,6 @@ package storage
 import (
 	"context"
 
-	"tkestack.io/tke/pkg/apiserver/filter"
 	"tkestack.io/tke/pkg/auth/util"
 
 	"tkestack.io/tke/pkg/util/log"
@@ -64,24 +63,14 @@ func (r *UnbindingREST) Create(ctx context.Context, obj runtime.Object, createVa
 		return nil, err
 	}
 
-	projectID := filter.ProjectIDFrom(ctx)
-	if projectID != "" {
-		for i := range bind.Users {
-			bind.Users[i].ProjectID = projectID
-		}
-
-		for i := range bind.Groups {
-			bind.Groups[i].ProjectID = projectID
-		}
+	policy := polObj.(*auth.Policy)
+	if policy.Spec.Scope == auth.PolicyProject {
+		return nil, errors.NewBadRequest("unable bind subject to project-scoped policy, please use projectunbinding api")
 	}
 
-	policy := polObj.(*auth.Policy)
 	remainedUsers := make([]auth.Subject, 0)
 	for _, sub := range policy.Status.Users {
 		if !util.InSubjects(sub, bind.Users) {
-			if projectID != "" {
-				sub.ProjectID = projectID
-			}
 			remainedUsers = append(remainedUsers, sub)
 		}
 	}

@@ -30,7 +30,6 @@ import (
 
 	"tkestack.io/tke/api/business"
 	"tkestack.io/tke/api/registry"
-	"tkestack.io/tke/pkg/apiserver/filter"
 )
 
 type testCase struct {
@@ -242,15 +241,15 @@ func TestConvertTKEAttributes(t *testing.T) {
 				ResourceRequest: true,
 				Resource:        "deployments",
 				Subresource:     "",
-				User:            &user.DefaultInfo{},
+				User: &user.DefaultInfo{
+					Groups: []string{fmt.Sprintf("project:%s", projectID)},
+				},
 			},
 			expect: &authorizer.AttributesRecord{
 				Verb:     "listDeployments",
 				Resource: fmt.Sprintf("cluster:%s/namespace:demo/deployment:*", clusterName),
 				User: &user.DefaultInfo{
-					Extra: map[string][]string{
-						filter.ProjectIDKey: {projectID},
-					},
+					Groups: []string{fmt.Sprintf("project:%s", projectID)},
 				},
 			},
 		},
@@ -314,7 +313,7 @@ func TestConvertTKEAttributes(t *testing.T) {
 	for i, testCase := range testCases {
 		result := ConvertTKEAttributes(testCase.ctx, testCase.attr)
 		if !compare(result, testCase.expect) {
-			t.Fatalf("expect attributes %v, but got %v", testCase.expect, result)
+			t.Fatalf("%d, expect attributes %v, but got %v", i, testCase.expect, result)
 		}
 	}
 }
@@ -323,6 +322,7 @@ func compare(a authorizer.Attributes, b authorizer.Attributes) bool {
 	if a.GetVerb() == b.GetVerb() && a.GetResource() == b.GetResource() && reflect.DeepEqual(a.GetUser(), b.GetUser()) {
 		return true
 	}
+	fmt.Println(a.GetUser(), b.GetUser())
 
 	return false
 }

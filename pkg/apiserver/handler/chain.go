@@ -26,8 +26,6 @@ import (
 	genericapifilters "k8s.io/apiserver/pkg/endpoints/filters"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericfilters "k8s.io/apiserver/pkg/server/filters"
-	"net/http"
-	"regexp"
 	apiserverfilter "tkestack.io/tke/pkg/apiserver/filter"
 	authfilter "tkestack.io/tke/pkg/auth/filter"
 	"tkestack.io/tke/pkg/platform/apiserver/filter"

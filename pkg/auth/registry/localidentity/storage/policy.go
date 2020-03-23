@@ -73,12 +73,11 @@ func (r *PolicyREST) List(ctx context.Context, options *metainternalversion.List
 	}
 	localIdentity := obj.(*auth.LocalIdentity)
 
-	roles, err := r.enforcer.GetRolesForUser(util.UserKey(localIdentity.Spec.TenantID, localIdentity.Spec.Username))
-	if err != nil {
-		log.Error("List roles for user failed from casbin failed", log.String("user", userID), log.Err(err))
-		return nil, apierrors.NewInternalError(err)
-	}
-
+	log.Infof("key: %s", util.UserKey(localIdentity.Spec.TenantID, localIdentity.Spec.Username))
+	roles := r.enforcer.GetRolesForUserInDomain(util.UserKey(localIdentity.Spec.TenantID, localIdentity.Spec.Username), "")
+	rules := r.enforcer.GetFilteredGroupingPolicy(0, util.UserKey(localIdentity.Spec.TenantID, localIdentity.Spec.Username))
+	log.Info("List permissions ", log.Any("rules", rules))
+	log.Info("List roles for user", log.String("user", localIdentity.Spec.Username), log.Strings("roles", roles))
 	var policyIDs []string
 	for _, r := range roles {
 		if strings.HasPrefix(r, "pol-") {

@@ -274,6 +274,10 @@ message ConfigMapList {
   repeated ConfigMap items = 2;
 }
 
+// Dummy is a empty struct.
+message Dummy {
+}
+
 // ExtraValue masks the value so protobuf can generate
 // +protobuf.nullable=true
 // +protobuf.options.(gogoproto.goproto_stringer)=false
@@ -305,13 +309,13 @@ message GroupList {
 message GroupSpec {
   optional string id = 1;
 
-  optional string project = 5;
-
   optional string displayName = 2;
 
   optional string tenantID = 3;
 
   optional string description = 4;
+
+  map<string, string> extra = 5;
 }
 
 // GroupStatus represents information about the status of a group.
@@ -378,8 +382,6 @@ message LocalGroupList {
 message LocalGroupSpec {
   repeated string finalizers = 1;
 
-  optional string project = 6;
-
   optional string displayName = 2;
 
   optional string tenantID = 3;
@@ -387,6 +389,8 @@ message LocalGroupSpec {
   optional string username = 4;
 
   optional string description = 5;
+
+  map<string, string> extra = 6;
 }
 
 // LocalGroupStatus represents information about the status of a group.
@@ -511,7 +515,6 @@ message PolicySpec {
 
   optional string tenantID = 1;
 
-  // The project of policy belong to, if empty, the policy is platform-scoped.
   optional string category = 9;
 
   optional string type = 10;
@@ -541,6 +544,44 @@ message PolicyStatus {
   // +optional
   // Groups represents the groups the policy applies to.
   repeated Subject groups = 3;
+}
+
+// ProjectPolicy is a collection of subjects bond to policies in a project scope.
+message ProjectPolicy {
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+
+  optional ProjectPolicySpec spec = 2;
+
+  optional ProjectPolicyStatus status = 3;
+}
+
+// ProjectPolicy is the whole list of all ProjectPolicys.
+message ProjectPolicyList {
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
+
+  // List of policies.
+  repeated ProjectPolicy items = 2;
+}
+
+// ProjectPolicySpec defines the desired identities of ProjectPolicySpec document in this set.
+message ProjectPolicySpec {
+  // Spec defines the desired identities of role document in this set.
+  repeated string finalizers = 1;
+
+  optional string tenantID = 2;
+
+  optional string projectID = 3;
+
+  optional string policyID = 4;
+
+  repeated Subject users = 5;
+
+  repeated Subject groups = 6;
+}
+
+// ProjectPolicyStatus represents information about the status of a ProjectPolicy.
+message ProjectPolicyStatus {
+  optional string phase = 1;
 }
 
 // ResourceAttributes includes the authorization attributes available for resource requests to the Authorizer interface
@@ -600,11 +641,11 @@ message RoleList {
 message RoleSpec {
   repeated string finalizers = 1;
 
-  optional string projectID = 7;
-
   optional string displayName = 2;
 
   optional string tenantID = 3;
+
+  optional string projectID = 7;
 
   // Username is Creator
   optional string username = 4;
@@ -680,8 +721,6 @@ message Subject {
   optional string id = 1;
 
   optional string name = 2;
-
-  optional string projectID = 3;
 }
 
 // SubjectAccessReview checks whether or not a user or group can perform an action.  Not filling in a

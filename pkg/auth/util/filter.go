@@ -22,6 +22,8 @@ import (
 	"context"
 	"k8s.io/apimachinery/pkg/fields"
 
+	"tkestack.io/tke/pkg/apiserver/filter"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	metainternal "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 
@@ -65,6 +67,24 @@ func FilterPolicy(ctx context.Context, policy *auth.Policy) error {
 	}
 	if policy.Spec.TenantID != tenantID {
 		return errors.NewNotFound(v1.Resource("policy"), policy.ObjectMeta.Name)
+	}
+
+	projectID := filter.ProjectIDFrom(ctx)
+	if projectID != "" && policy.Spec.Scope != auth.PolicyProject {
+		return errors.NewNotFound(v1.Resource("policy"), policy.ObjectMeta.Name)
+	}
+
+	return nil
+}
+
+// FilterPolicy is used to filter policy that do not belong to the tenant.
+func FilterProjectPolicy(ctx context.Context, binding *auth.ProjectPolicy) error {
+	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
+	if tenantID == "" {
+		return nil
+	}
+	if binding.Spec.TenantID != tenantID {
+		return errors.NewNotFound(v1.Resource("ProjectPolicy"), binding.ObjectMeta.Name)
 	}
 	return nil
 }
@@ -111,5 +131,25 @@ func PredicateUserNameListOptions(ctx context.Context, options *metainternal.Lis
 		return options
 	}
 	options.FieldSelector = fields.AndSelectors(options.FieldSelector, fields.OneTermEqualSelector("spec.username", username))
+	return options
+}
+
+// PredicateProjectListOptions determines the query options according to the project
+// attribute of the request user.
+func PredicateProjectListOptions(ctx context.Context, options *metainternal.ListOptions) *metainternal.ListOptions {
+	projectID := filter.ProjectIDFrom(ctx)
+	if projectID == "" {
+		return options
+	}
+	if options == nil {
+		return &metainternal.ListOptions{
+			FieldSelector: fields.OneTermEqualSelector("spec.scope", string(auth.PolicyProject)),
+		}
+	}
+	if options.FieldSelector == nil {
+		options.FieldSelector = fields.OneTermEqualSelector("spec.scope", string(auth.PolicyProject))
+		return options
+	}
+	options.FieldSelector = fields.AndSelectors(options.FieldSelector, fields.OneTermEqualSelector("spec.scope", string(auth.PolicyProject)))
 	return options
 }

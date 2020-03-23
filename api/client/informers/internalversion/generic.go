@@ -80,6 +80,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Auth().InternalVersion().LocalIdentities().Informer()}, nil
 	case auth.SchemeGroupVersion.WithResource("policies"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Auth().InternalVersion().Policies().Informer()}, nil
+	case auth.SchemeGroupVersion.WithResource("projectpolicies"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Auth().InternalVersion().ProjectPolicies().Informer()}, nil
 	case auth.SchemeGroupVersion.WithResource("roles"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Auth().InternalVersion().Roles().Informer()}, nil
 	case auth.SchemeGroupVersion.WithResource("rules"):
