@@ -276,6 +276,9 @@ message ConfigMapList {
 
 // Dummy is a empty struct.
 message Dummy {
+  repeated string ownerProjects = 1;
+
+  repeated string memberProjects = 2;
 }
 
 // ExtraValue masks the value so protobuf can generate
@@ -572,7 +575,7 @@ message ProjectPolicySpec {
 
   optional string projectID = 3;
 
-  optional string policyID = 4;
+  optional string policies = 4;
 
   repeated Subject users = 5;
 

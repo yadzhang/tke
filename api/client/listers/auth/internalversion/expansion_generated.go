@@ -64,6 +64,10 @@ type PolicyListerExpansion interface{}
 // ProjectPolicyLister.
 type ProjectPolicyListerExpansion interface{}
 
+// ProjectRoleListerExpansion allows custom methods to be added to
+// ProjectRoleLister.
+type ProjectRoleListerExpansion interface{}
+
 // RoleListerExpansion allows custom methods to be added to
 // RoleLister.
 type RoleListerExpansion interface{}

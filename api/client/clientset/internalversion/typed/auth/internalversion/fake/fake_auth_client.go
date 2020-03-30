@@ -74,6 +74,10 @@ func (c *FakeAuth) ProjectPolicies() internalversion.ProjectPolicyInterface {
 	return &FakeProjectPolicies{c}
 }
 
+func (c *FakeAuth) ProjectRoles() internalversion.ProjectRoleInterface {
+	return &FakeProjectRoles{c}
+}
+
 func (c *FakeAuth) Roles() internalversion.RoleInterface {
 	return &FakeRoles{c}
 }

@@ -42,6 +42,8 @@ type PolicyExpansion interface{}
 
 type ProjectPolicyExpansion interface{}
 
+type ProjectRoleExpansion interface{}
+
 type RoleExpansion interface{}
 
 type RuleExpansion interface{}

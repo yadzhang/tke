@@ -560,7 +560,7 @@ type ProjectPolicySpec struct {
 	Finalizers []FinalizerName `json:"finalizers,omitempty" protobuf:"bytes,1,rep,name=finalizers,casttype=FinalizerName"`
 	TenantID   string          `json:"tenantID" protobuf:"bytes,2,opt,name=tenantID"`
 	ProjectID  string          `json:"projectID" protobuf:"bytes,3,opt,name=projectID"`
-	PolicyID   string          `json:"policyID" protobuf:"bytes,4,opt,name=policyID"`
+	Policies   string          `json:"policies" protobuf:"bytes,4,opt,name=policies"`
 	Users      []Subject       `json:"users" protobuf:"bytes,5,rep,name=users"`
 	Groups     []Subject       `json:"groups" protobuf:"bytes,6,rep,name=groups"`
 }
@@ -595,6 +595,9 @@ type ProjectPolicyList struct {
 // Dummy is a empty struct.
 type Dummy struct {
 	metav1.TypeMeta `json:",inline"`
+
+	OwnerProjects  []string `json:"ownerProjects" protobuf:"bytes,1,rep,name=ownerProjects"`
+	MemberProjects []string `json:"memberProjects" protobuf:"bytes,2,rep,name=memberProjects"`
 }
 
 const (

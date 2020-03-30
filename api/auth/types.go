@@ -232,7 +232,6 @@ type Group struct {
 
 // GroupSpec is a description of an Group.
 type GroupSpec struct {
-
 	ID          string
 	DisplayName string
 	TenantID    string
@@ -423,6 +422,12 @@ const (
 	PolicyTerminating PolicyPhase = "Terminating"
 )
 
+const (
+	ProjectOwnerPolicyID = "pol-project-owner"
+	ProjectMemberPolicyID = "pol-project-member"
+	ProjectViewerPolicyID = "pol-project-viewer"
+)
+
 // +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -518,7 +523,7 @@ type PolicyStatus struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ProjectPolicy is a collection of subjects bond to policies in a project scope.
+// ProjectPolicy represents a subjects bind to a policy in a project scope.
 type ProjectPolicy struct {
 	metav1.TypeMeta
 	metav1.ObjectMeta
@@ -532,7 +537,7 @@ type ProjectPolicySpec struct {
 	Finalizers []FinalizerName
 	TenantID   string
 	ProjectID  string
-	PolicyID   string
+	Policies   string
 	Users      []Subject
 	Groups     []Subject
 }
@@ -556,6 +561,47 @@ type ProjectPolicyStatus struct {
 
 // ProjectPolicy is the whole list of all ProjectPolicys.
 type ProjectPolicyList struct {
+	metav1.TypeMeta
+	metav1.ListMeta
+	// List of policies.
+	Items []ProjectPolicy
+}
+
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ProjectRole represents a subjects bind to a roles in a project scope.
+type ProjectRole struct {
+	metav1.TypeMeta
+	metav1.ObjectMeta
+
+	Spec   ProjectRoleSpec
+	Status ProjectRoleStatus
+}
+
+// ProjectRoleSpec defines the desired identities of ProjectRoleSpec document in this set.
+type ProjectRoleSpec struct {
+	Finalizers []FinalizerName
+	TenantID   string
+	ProjectID  string
+
+	// A list of policies of
+	Policies   []string
+	Users      []Subject
+	Groups     []Subject
+}
+
+// ProjectRoleStatus represents information about the status of a ProjectRole.
+type ProjectRoleStatus struct {
+	Phase BindingPhase
+}
+
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ProjectPolicy is the whole list of all ProjectPolicys.
+type ProjectRoleList struct {
 	metav1.TypeMeta
 	metav1.ListMeta
 	// List of policies.
@@ -717,6 +763,9 @@ type PolicyBinding struct {
 // Dummy is a empty struct.
 type Dummy struct {
 	metav1.TypeMeta
+
+	OwnerProjects  []string
+	MemberProjects []string
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -48,6 +48,8 @@ type Interface interface {
 	Policies() PolicyInformer
 	// ProjectPolicies returns a ProjectPolicyInformer.
 	ProjectPolicies() ProjectPolicyInformer
+	// ProjectRoles returns a ProjectRoleInformer.
+	ProjectRoles() ProjectRoleInformer
 	// Roles returns a RoleInformer.
 	Roles() RoleInformer
 	// Rules returns a RuleInformer.
@@ -120,6 +122,11 @@ func (v *version) Policies() PolicyInformer {
 // ProjectPolicies returns a ProjectPolicyInformer.
 func (v *version) ProjectPolicies() ProjectPolicyInformer {
 	return &projectPolicyInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// ProjectRoles returns a ProjectRoleInformer.
+func (v *version) ProjectRoles() ProjectRoleInformer {
+	return &projectRoleInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // Roles returns a RoleInformer.

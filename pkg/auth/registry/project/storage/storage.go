@@ -21,6 +21,8 @@ package storage
 import (
 	"context"
 
+	"github.com/casbin/casbin/v2"
+	metainternal "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic"
@@ -41,7 +43,7 @@ type Storage struct {
 }
 
 // NewStorage returns a Storage object that will work against configmap.
-func NewStorage(_ genericregistry.RESTOptionsGetter, authClient authinternalclient.AuthInterface) *Storage {
+func NewStorage(_ genericregistry.RESTOptionsGetter, authClient authinternalclient.AuthInterface,  enforcer *casbin.SyncedEnforcer) *Storage {
 	return &Storage{
 		Project:   &REST{},
 		User:      &UserREST{authClient},
@@ -54,6 +56,8 @@ func NewStorage(_ genericregistry.RESTOptionsGetter, authClient authinternalclie
 // REST implements a RESTStorage for configmap against etcd.
 type REST struct {
 	rest.Storage
+
+
 }
 
 func (r *REST) NamespaceScoped() bool {
@@ -75,4 +79,9 @@ func (r *REST) NewList() runtime.Object {
 // Create creates a new version of a resource.
 func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error) {
 	return &auth.Dummy{}, nil
+}
+
+func (r *REST) List(ctx context.Context, options *metainternal.ListOptions) (runtime.Object, error) {
+
+	return nil, nil
 }

@@ -561,6 +561,16 @@ func (in *ConfigMapList) DeepCopyObject() runtime.Object {
 func (in *Dummy) DeepCopyInto(out *Dummy) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
+	if in.OwnerProjects != nil {
+		in, out := &in.OwnerProjects, &out.OwnerProjects
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.MemberProjects != nil {
+		in, out := &in.MemberProjects, &out.MemberProjects
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

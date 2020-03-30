@@ -1135,6 +1135,8 @@ func Convert_auth_ConfigMapList_To_v1_ConfigMapList(in *auth.ConfigMapList, out 
 }
 
 func autoConvert_v1_Dummy_To_auth_Dummy(in *Dummy, out *auth.Dummy, s conversion.Scope) error {
+	out.OwnerProjects = *(*[]string)(unsafe.Pointer(&in.OwnerProjects))
+	out.MemberProjects = *(*[]string)(unsafe.Pointer(&in.MemberProjects))
 	return nil
 }
 
@@ -1144,6 +1146,8 @@ func Convert_v1_Dummy_To_auth_Dummy(in *Dummy, out *auth.Dummy, s conversion.Sco
 }
 
 func autoConvert_auth_Dummy_To_v1_Dummy(in *auth.Dummy, out *Dummy, s conversion.Scope) error {
+	out.OwnerProjects = *(*[]string)(unsafe.Pointer(&in.OwnerProjects))
+	out.MemberProjects = *(*[]string)(unsafe.Pointer(&in.MemberProjects))
 	return nil
 }
 
@@ -1810,7 +1814,7 @@ func autoConvert_v1_ProjectPolicySpec_To_auth_ProjectPolicySpec(in *ProjectPolic
 	out.Finalizers = *(*[]auth.FinalizerName)(unsafe.Pointer(&in.Finalizers))
 	out.TenantID = in.TenantID
 	out.ProjectID = in.ProjectID
-	out.PolicyID = in.PolicyID
+	out.Policies = in.Policies
 	out.Users = *(*[]auth.Subject)(unsafe.Pointer(&in.Users))
 	out.Groups = *(*[]auth.Subject)(unsafe.Pointer(&in.Groups))
 	return nil
@@ -1825,7 +1829,7 @@ func autoConvert_auth_ProjectPolicySpec_To_v1_ProjectPolicySpec(in *auth.Project
 	out.Finalizers = *(*[]FinalizerName)(unsafe.Pointer(&in.Finalizers))
 	out.TenantID = in.TenantID
 	out.ProjectID = in.ProjectID
-	out.PolicyID = in.PolicyID
+	out.Policies = in.Policies
 	out.Users = *(*[]Subject)(unsafe.Pointer(&in.Users))
 	out.Groups = *(*[]Subject)(unsafe.Pointer(&in.Groups))
 	return nil
