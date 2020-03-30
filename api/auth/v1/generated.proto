@@ -558,6 +558,17 @@ message ProjectPolicy {
   optional ProjectPolicyStatus status = 3;
 }
 
+// PolicyBinding references the request to bind or unbind policies to the role.
+message ProjectPolicyBinding {
+  // Policies holds the policies will bind to the subjects.
+  // +optional
+  repeated string policies = 1;
+
+  repeated Subject users = 2;
+
+  repeated Subject groups = 3;
+}
+
 // ProjectPolicy is the whole list of all ProjectPolicys.
 message ProjectPolicyList {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
@@ -575,7 +586,7 @@ message ProjectPolicySpec {
 
   optional string projectID = 3;
 
-  optional string policies = 4;
+  optional string policyID = 4;
 
   repeated Subject users = 5;
 

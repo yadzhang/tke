@@ -560,7 +560,7 @@ type ProjectPolicySpec struct {
 	Finalizers []FinalizerName `json:"finalizers,omitempty" protobuf:"bytes,1,rep,name=finalizers,casttype=FinalizerName"`
 	TenantID   string          `json:"tenantID" protobuf:"bytes,2,opt,name=tenantID"`
 	ProjectID  string          `json:"projectID" protobuf:"bytes,3,opt,name=projectID"`
-	Policies   string          `json:"policies" protobuf:"bytes,4,opt,name=policies"`
+	PolicyID   string          `json:"policyID" protobuf:"bytes,4,opt,name=policyID"`
 	Users      []Subject       `json:"users" protobuf:"bytes,5,rep,name=users"`
 	Groups     []Subject       `json:"groups" protobuf:"bytes,6,rep,name=groups"`
 }
@@ -588,6 +588,20 @@ type ProjectPolicyList struct {
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	// List of policies.
 	Items []ProjectPolicy `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// PolicyBinding references the request to bind or unbind policies to the role.
+type ProjectPolicyBinding struct {
+	metav1.TypeMeta `json:",inline"`
+
+	// Policies holds the policies will bind to the subjects.
+	// +optional
+	Policies []string `json:"policies,omitempty" protobuf:"bytes,1,rep,name=policies"`
+
+	Users  []Subject `json:"users" protobuf:"bytes,2,rep,name=users"`
+	Groups []Subject `json:"groups" protobuf:"bytes,3,rep,name=groups"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

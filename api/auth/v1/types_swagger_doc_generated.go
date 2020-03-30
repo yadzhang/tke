@@ -432,6 +432,15 @@ func (ProjectPolicy) SwaggerDoc() map[string]string {
 	return map_ProjectPolicy
 }
 
+var map_ProjectPolicyBinding = map[string]string{
+	"":         "PolicyBinding references the request to bind or unbind policies to the role.",
+	"policies": "Policies holds the policies will bind to the subjects.",
+}
+
+func (ProjectPolicyBinding) SwaggerDoc() map[string]string {
+	return map_ProjectPolicyBinding
+}
+
 var map_ProjectPolicyList = map[string]string{
 	"":      "ProjectPolicy is the whole list of all ProjectPolicys.",
 	"items": "List of policies.",

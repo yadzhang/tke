@@ -20,21 +20,21 @@ package storage
 
 import (
 	"context"
-
-	"tkestack.io/tke/pkg/apiserver/filter"
-
-	"tkestack.io/tke/pkg/auth/util"
-
-	"tkestack.io/tke/pkg/util/log"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 
 	"tkestack.io/tke/api/auth"
 	authinternalclient "tkestack.io/tke/api/client/clientset/internalversion/typed/auth/internalversion"
+	"tkestack.io/tke/pkg/apiserver/filter"
+	"tkestack.io/tke/pkg/auth/util"
+	"tkestack.io/tke/pkg/util/log"
 )
 
 // UnBindingREST implements the REST endpoint.
@@ -47,7 +47,7 @@ var _ = rest.Creater(&UnBindingREST{})
 // New returns an empty object that can be used with Create after request data
 // has been put into it.
 func (r *UnBindingREST) New() runtime.Object {
-	return &auth.ProjectPolicy{}
+	return &auth.ProjectPolicyBinding{}
 }
 
 func (r *UnBindingREST) Create(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error) {
@@ -56,19 +56,13 @@ func (r *UnBindingREST) Create(ctx context.Context, obj runtime.Object, createVa
 		return nil, errors.NewBadRequest("unable to get request info from context")
 	}
 
-	bind := obj.(*auth.ProjectPolicy)
-	if bind.Spec.PolicyID == "" {
-		return nil, errors.NewBadRequest("must specify policyID")
+	bind := obj.(*auth.ProjectPolicyBinding)
+	if len(bind.Policies) == 0 {
+		return nil, errors.NewBadRequest("must specify policies")
 	}
 
-	policy, err := r.authClient.Policies().Get(bind.Spec.PolicyID, metav1.GetOptions{})
-	if err != nil {
-		log.Error("get policy failed", log.String("policy", bind.Spec.PolicyID), log.Err(err))
-		return nil, err
-	}
-
-	if policy.Spec.Scope != auth.PolicyProject {
-		return nil, errors.NewBadRequest("unable bind subject to platform-scoped policy in project")
+	if len(bind.Users) == 0 && len(bind.Groups) == 0 {
+		return nil, errors.NewBadRequest("must specify users or groups")
 	}
 
 	projectID := filter.ProjectIDFrom(ctx)
@@ -76,28 +70,75 @@ func (r *UnBindingREST) Create(ctx context.Context, obj runtime.Object, createVa
 		projectID = requestInfo.Name
 	}
 
-	projectPolicyBinding, err := r.authClient.ProjectPolicies().Get(util.ProjectPolicyName(projectID, policy.Name), metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
+	projectPolicyList := &auth.ProjectPolicyList{}
+	var errs []error
+	for _, policyID := range bind.Policies {
 
-	remainedUsers := make([]auth.Subject, 0)
-	for _, sub := range projectPolicyBinding.Spec.Users {
-		if !util.InSubjects(sub, bind.Spec.Users) {
-			remainedUsers = append(remainedUsers, sub)
+		policy, err := r.authClient.Policies().Get(policyID, metav1.GetOptions{})
+		if err != nil {
+			log.Error("Get policy failed", log.String("policy", policyID), log.Err(err))
+			errs = append(errs, err)
+			continue
 		}
-	}
 
-	projectPolicyBinding.Spec.Users = remainedUsers
-	remainedGroups := make([]auth.Subject, 0)
-	for _, sub := range projectPolicyBinding.Spec.Groups {
-		if !util.InSubjects(sub, bind.Spec.Groups) {
-			remainedGroups = append(remainedGroups, sub)
+		if policy.Spec.Scope != auth.PolicyProject {
+			errs = append(errs, fmt.Errorf("unable bind subject to platform-scoped policy %s in project", policyID))
+			continue
 		}
+
+		projectPolicy, err := r.authClient.ProjectPolicies().Get(util.ProjectPolicyName(projectID, policy.Name), metav1.GetOptions{})
+		if err != nil && apierrors.IsNotFound(err) {
+			// if projectPolicy not exist, create a new one
+			projectPolicy, err = r.authClient.ProjectPolicies().Create(&auth.ProjectPolicy{
+				Spec: auth.ProjectPolicySpec{
+					TenantID:  policy.Spec.TenantID,
+					ProjectID: projectID,
+					PolicyID:  policy.Name,
+				},
+			})
+			if err != nil {
+				if apierrors.IsAlreadyExists(err) {
+					projectPolicy, err = r.authClient.ProjectPolicies().Get(util.ProjectPolicyName(projectID, policy.Name), metav1.GetOptions{})
+				}
+			}
+		}
+
+		if err != nil {
+			log.Error("Create or get policy failed", log.String("policyID", policyID), log.Err(err))
+			errs = append(errs, err)
+			continue
+		}
+
+		remainedUsers := make([]auth.Subject, 0)
+		for _, sub := range bind.Users {
+			if !util.InSubjects(sub, bind.Users) {
+				remainedUsers = append(remainedUsers, sub)
+			}
+		}
+		projectPolicy.Spec.Users = remainedUsers
+
+		remainedGroups := make([]auth.Subject, 0)
+		for _, sub := range bind.Groups {
+			if !util.InSubjects(sub, bind.Groups) {
+				remainedGroups = append(remainedGroups, sub)
+			}
+		}
+		projectPolicy.Spec.Groups = remainedGroups
+
+		log.Info("unbind policy subjects", log.String("policy", projectPolicy.Name), log.Any("users", projectPolicy.Spec.Users), log.Any("groups", projectPolicy.Spec.Groups))
+		projectPolicy, err = r.authClient.ProjectPolicies().Update(projectPolicy)
+		if err != nil {
+			log.Error("Update project policy failed", log.String("policyID", projectPolicy.Name), log.Err(err))
+			errs = append(errs, err)
+		}
+
+		projectPolicyList.Items = append(projectPolicyList.Items, *projectPolicy)
+
 	}
 
-	projectPolicyBinding.Spec.Groups = remainedGroups
-	log.Info("unbind policy subjects", log.String("policy", projectPolicyBinding.Name), log.Any("users", projectPolicyBinding.Spec.Users), log.Any("groups", projectPolicyBinding.Spec.Groups))
-	return r.authClient.ProjectPolicies().Update(projectPolicyBinding)
+	if len(errs) == 0 {
+		return projectPolicyList, nil
+	}
+
+	return nil, utilerrors.NewAggregate(errs)
 }
-

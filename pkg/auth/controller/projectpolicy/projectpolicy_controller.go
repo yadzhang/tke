@@ -249,14 +249,11 @@ func (c *Controller) handleSubjects(key string, policy *v1.ProjectPolicy) error 
 		return nil
 	}
 
-	// projectID::user => policy
-
 	expectProjectSubj := sets.String{}
 	for _, subj := range policy.Spec.Users {
 		expectProjectSubj.Insert(authutil.UserKey(policy.Spec.TenantID, subj.Name))
 	}
 
-	// Todo: enforce add all members in the group, prj-xxx::user -> prj-xxx::group -> policy
 	for _, subj := range policy.Spec.Groups {
 		expectProjectSubj.Insert(authutil.GroupKey(policy.Spec.TenantID, subj.Name))
 	}
@@ -301,4 +298,3 @@ func (c *Controller) handleRules(tenantID, policyID, projectID string, expectSub
 
 	return utilerrors.NewAggregate(errs)
 }
-

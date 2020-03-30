@@ -423,7 +423,7 @@ const (
 )
 
 const (
-	ProjectOwnerPolicyID = "pol-project-owner"
+	ProjectOwnerPolicyID  = "pol-project-owner"
 	ProjectMemberPolicyID = "pol-project-member"
 	ProjectViewerPolicyID = "pol-project-viewer"
 )
@@ -537,9 +537,23 @@ type ProjectPolicySpec struct {
 	Finalizers []FinalizerName
 	TenantID   string
 	ProjectID  string
-	Policies   string
+	PolicyID   string
 	Users      []Subject
 	Groups     []Subject
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// PolicyBinding references the request to bind or unbind policies to the role.
+type ProjectPolicyBinding struct {
+	metav1.TypeMeta
+
+	// Policies holds the policies will bind to the subjects.
+	// +optional
+	Policies []string
+
+	Users  []Subject
+	Groups []Subject
 }
 
 // BindingPhase defines the phase of ProjectPolicy constructor.
@@ -587,9 +601,9 @@ type ProjectRoleSpec struct {
 	ProjectID  string
 
 	// A list of policies of
-	Policies   []string
-	Users      []Subject
-	Groups     []Subject
+	Policies []string
+	Users    []Subject
+	Groups   []Subject
 }
 
 // ProjectRoleStatus represents information about the status of a ProjectRole.
