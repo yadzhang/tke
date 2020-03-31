@@ -193,11 +193,11 @@ const businessCommonRouterConfig: RouterConfig[] = [
     title: '组织资源',
     watchModule: [ConsoleModuleEnum.Registry, ConsoleModuleEnum.ApiKey],
     subRouterConfig: [
-      {
+/*      {
         url: '/tkestack-project/registry/repo',
         title: '仓库管理',
         watchModule: ConsoleModuleEnum.Registry
-      },
+      },*/
       {
         url: '/tkestack-project/registry/apikey',
         title: '访问凭证',
