@@ -93,8 +93,8 @@ const commonRouterConfig: RouterConfig[] = [
   },
   {
     title: '组织资源',
-    watchModule: [ConsoleModuleEnum.Chart, ConsoleModuleEnum.ApiKey],
-   // watchModule: [ConsoleModuleEnum.Registry, ConsoleModuleEnum.Chart, ConsoleModuleEnum.ApiKey],
+   // watchModule: [ConsoleModuleEnum.Chart, ConsoleModuleEnum.ApiKey],
+    watchModule: [ConsoleModuleEnum.Registry, ConsoleModuleEnum.Chart, ConsoleModuleEnum.ApiKey],
     subRouterConfig: [
       // {
       //   url: '/tkestack/registry/repo',
@@ -192,8 +192,7 @@ const businessCommonRouterConfig: RouterConfig[] = [
   },
   {
     title: '组织资源',
-    watchModule: [ConsoleModuleEnum.ApiKey],
-    //watchModule: [ConsoleModuleEnum.Registry, ConsoleModuleEnum.ApiKey],
+    watchModule: [ConsoleModuleEnum.Registry, ConsoleModuleEnum.ApiKey],
     subRouterConfig: [
 /*      {
         url: '/tkestack-project/registry/repo',
