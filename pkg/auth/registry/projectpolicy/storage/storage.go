@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metainternal "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
@@ -41,7 +40,6 @@ import (
 	"tkestack.io/tke/api/auth"
 	authinternalclient "tkestack.io/tke/api/client/clientset/internalversion/typed/auth/internalversion"
 	"tkestack.io/tke/pkg/apiserver/authentication"
-	"tkestack.io/tke/pkg/apiserver/filter"
 	apiserverutil "tkestack.io/tke/pkg/apiserver/util"
 	"tkestack.io/tke/pkg/auth/registry/projectpolicy"
 	"tkestack.io/tke/pkg/auth/util"
@@ -52,7 +50,8 @@ import (
 type Storage struct {
 	ProjectPolicy *REST
 
-	Status *StatusREST
+	Status   *StatusREST
+	Finalize *FinalizeREST
 }
 
 // NewStorage returns a Storage object that will work against policies.
@@ -90,6 +89,7 @@ func NewStorage(optsGetter generic.RESTOptionsGetter, authClient authinternalcli
 	return &Storage{
 		ProjectPolicy: &REST{store, privilegedUsername},
 		Status:        &StatusREST{&statusStore},
+		Finalize:      &FinalizeREST{&finalizeStore},
 	}
 }
 
@@ -125,11 +125,7 @@ func ValidateExportObjectAndTenantID(ctx context.Context, store *registry.Store,
 // ValidateListObject validate if list by admin, if false, filter deleted apikey.
 func ValidateListObjectAndTenantID(ctx context.Context, store *registry.Store, options *metainternal.ListOptions) (runtime.Object, error) {
 	wrappedOptions := apiserverutil.PredicateListOptions(ctx, options)
-
-	projectID := filter.ProjectIDFrom(ctx)
-	if projectID != "" {
-		wrappedOptions.FieldSelector = fields.AndSelectors(wrappedOptions.FieldSelector, fields.OneTermEqualSelector("spec.projectID", projectID))
-	}
+	wrappedOptions = util.PredicateProjectIDListOptions(ctx, wrappedOptions)
 
 	obj, err := store.List(ctx, wrappedOptions)
 	if err != nil {
@@ -265,7 +261,7 @@ func (r *REST) Delete(ctx context.Context, name string, deleteValidation rest.Va
 	if err != nil {
 		return nil, false, err
 	}
-	policy := object.(*auth.Policy)
+	policy := object.(*auth.ProjectPolicy)
 
 	// Ensure we have a UID precondition
 	if options == nil {
@@ -350,8 +346,8 @@ func (r *REST) Delete(ctx context.Context, name string, deleteValidation rest.Va
 		)
 
 		if err != nil {
-			err = storageerr.InterpretGetError(err, auth.Resource("ProjectPolicys"), name)
-			err = storageerr.InterpretUpdateError(err, auth.Resource("ProjectPolicys"), name)
+			err = storageerr.InterpretGetError(err, auth.Resource("ProjectPolicies"), name)
+			err = storageerr.InterpretUpdateError(err, auth.Resource("ProjectPolicies"), name)
 			if _, ok := err.(*apierrors.StatusError); !ok {
 				err = apierrors.NewInternalError(err)
 			}
@@ -363,7 +359,7 @@ func (r *REST) Delete(ctx context.Context, name string, deleteValidation rest.Va
 
 	// prior to final deletion, we must ensure that finalizers is empty
 	if len(policy.Spec.Finalizers) != 0 {
-		err = apierrors.NewConflict(auth.Resource("ProjectPolicys"), policy.Name, fmt.Errorf("the system is ensuring all content is removed from this policy.  Upon completion, this policy will automatically be purged by the system"))
+		err = apierrors.NewConflict(auth.Resource("ProjectPolicies"), policy.Name, fmt.Errorf("the system is ensuring all content is removed from this policy.  Upon completion, this policy will automatically be purged by the system"))
 		return nil, false, err
 	}
 	return r.Store.Delete(ctx, name, deleteValidation, options)

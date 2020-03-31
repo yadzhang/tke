@@ -130,6 +130,8 @@ func (s *StorageProvider) v1Storage(apiResourceConfigSource serverstorage.APIRes
 
 		projectPolicyRest := projectpolicystorage.NewStorage(restOptionsGetter, authClient, s.Enforcer, s.PrivilegedUsername)
 		storageMap["projectpolicies"] = projectPolicyRest.ProjectPolicy
+		storageMap["projectpolicies/finalize"] = projectPolicyRest.Finalize
+		storageMap["projectpolicies/status"] = projectPolicyRest.Status
 
 		projectRest := projectstorage.NewStorage(restOptionsGetter, authClient, s.Enforcer)
 		storageMap["projects"] = projectRest.Project

@@ -637,7 +637,7 @@ g = _, _, _
 e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 
 [matchers]
-m = g(r.sub, p.sub, p.dom)  && keyMatchCustom(r.obj, p.obj) && keyMatchCustom(r.act, p.act)
+m = g(r.sub, p.sub, p.dom) && keyMatchCustom(r.obj, p.obj) && keyMatchCustom(r.act, p.act)
 `
 )
 

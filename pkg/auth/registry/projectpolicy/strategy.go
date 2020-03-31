@@ -247,12 +247,15 @@ func NewFinalizerStrategy(strategy *Strategy) *FinalizeStrategy {
 func (FinalizeStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 	newBinding := obj.(*auth.ProjectPolicy)
 	oldBinding := old.(*auth.ProjectPolicy)
+	finalizers := newBinding.Spec.Finalizers
 	newBinding.Status = oldBinding.Status
+	newBinding.Spec = oldBinding.Spec
+	newBinding.Spec.Finalizers = finalizers
 }
 
 // ValidateUpdate is invoked after default fields in the object have been
 // filled in before the object is persisted.  This method should not mutate
 // the object.
 func (s *FinalizeStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	return ValidateProjectPolicyUpdate(obj.(*auth.ProjectPolicy), old.(*auth.ProjectPolicy), s.authClient)
+	return nil
 }

@@ -76,7 +76,7 @@ const (
 	PolicyFinalize FinalizerName = "policy"
 
 	// ProjectPolicyFinalize is an internal finalizer values to ProjectPolicy.
-	ProjectPolicyFinalize FinalizerName = "policy"
+	ProjectPolicyFinalize FinalizerName = "projectpolicy"
 
 	// GroupFinalize is an internal finalizer values to Group.
 	GroupFinalize FinalizerName = "localgroup"

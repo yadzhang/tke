@@ -67,7 +67,7 @@ type Controller struct {
 	ruleLister         authv1lister.RuleLister
 	ruleListerSynced   cache.InformerSynced
 	// helper to delete all resources in the policy when the policy is deleted.
-	policyedResourcesDeleter deletion.PoliciedResourcesDeleterInterface
+	policiedResourcesDeleter deletion.PoliciedResourcesDeleterInterface
 	enforcer                 *casbin.SyncedEnforcer
 }
 
@@ -78,7 +78,7 @@ func NewController(client clientset.Interface, policyInformer authv1informer.Pol
 		client:                   client,
 		queue:                    workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), controllerName),
 		enforcer:                 enforcer,
-		policyedResourcesDeleter: deletion.NewPoliciedResourcesDeleter(client.AuthV1().Policies(), client.AuthV1(), enforcer, finalizerToken, true),
+		policiedResourcesDeleter: deletion.NewPoliciedResourcesDeleter(client.AuthV1().Policies(), client.AuthV1(), enforcer, finalizerToken, true),
 	}
 
 	if client != nil && client.AuthV1().RESTClient().GetRateLimiter() != nil {
@@ -212,7 +212,7 @@ func (c *Controller) syncItem(key string) error {
 		log.Warn("Unable to retrieve policy from store", log.String("policy name", key), log.Err(err))
 	default:
 		if policy.Status.Phase == v1.PolicyTerminating {
-			err = c.policyedResourcesDeleter.Delete(key)
+			err = c.policiedResourcesDeleter.Delete(key)
 		} else {
 			err = c.processUpdate(policy, key)
 		}

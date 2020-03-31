@@ -37,7 +37,7 @@ import (
 	clientset "tkestack.io/tke/api/client/clientset/versioned"
 	authv1informer "tkestack.io/tke/api/client/informers/externalversions/auth/v1"
 	authv1lister "tkestack.io/tke/api/client/listers/auth/v1"
-	"tkestack.io/tke/pkg/auth/controller/policy/deletion"
+	"tkestack.io/tke/pkg/auth/controller/projectpolicy/deletion"
 	authutil "tkestack.io/tke/pkg/auth/util"
 	controllerutil "tkestack.io/tke/pkg/controller"
 	"tkestack.io/tke/pkg/util"
@@ -66,18 +66,18 @@ type Controller struct {
 	ruleLister         authv1lister.RuleLister
 	ruleListerSynced   cache.InformerSynced
 	// helper to delete all resources in the policy when the policy is deleted.
-	policyedResourcesDeleter deletion.PoliciedResourcesDeleterInterface
-	enforcer                 *casbin.SyncedEnforcer
+	projectpolicyedResourcesDeleter deletion.ProjectPoliciedResourcesDeleterInterface
+	enforcer                        *casbin.SyncedEnforcer
 }
 
 // NewController creates a new projectpolicy controller object.
 func NewController(client clientset.Interface, policyInformer authv1informer.ProjectPolicyInformer, ruleInformer authv1informer.RuleInformer, enforcer *casbin.SyncedEnforcer, resyncPeriod time.Duration, finalizerToken v1.FinalizerName) *Controller {
 	// create the controller so we can inject the enqueue function
 	controller := &Controller{
-		client:                   client,
-		queue:                    workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), controllerName),
-		enforcer:                 enforcer,
-		policyedResourcesDeleter: deletion.NewPoliciedResourcesDeleter(client.AuthV1().Policies(), client.AuthV1(), enforcer, finalizerToken, true),
+		client:                          client,
+		queue:                           workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), controllerName),
+		enforcer:                        enforcer,
+		projectpolicyedResourcesDeleter: deletion.NewProjectPoliciedResourcesDeleter(client.AuthV1().ProjectPolicies(), client.AuthV1(), enforcer, finalizerToken, true),
 	}
 
 	if client != nil && client.AuthV1().RESTClient().GetRateLimiter() != nil {
@@ -211,7 +211,9 @@ func (c *Controller) syncItem(key string) error {
 		log.Warn("Unable to retrieve projectPolicy from store", log.String("projectPolicy name", key), log.Err(err))
 	default:
 		if projectPolicy.Status.Phase == v1.BindingTerminating {
-			err = c.policyedResourcesDeleter.Delete(key)
+
+			log.Error("Delete project policy", log.String("key", key))
+			err = c.projectpolicyedResourcesDeleter.Delete(key)
 		} else {
 			err = c.processUpdate(projectPolicy, key)
 		}
@@ -262,7 +264,8 @@ func (c *Controller) handleSubjects(key string, policy *v1.ProjectPolicy) error 
 }
 
 func (c *Controller) handleRules(tenantID, policyID, projectID string, expectSubj []string) error {
-	rules := c.enforcer.GetFilteredGroupingPolicy(1, policyID)
+	rules := c.enforcer.GetFilteredGroupingPolicy(1, policyID, projectID)
+
 	log.Debugf("Get grouping rules for policy: %s, %v", policyID, rules)
 
 	var existSubj []string

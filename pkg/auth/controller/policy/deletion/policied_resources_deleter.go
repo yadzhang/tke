@@ -25,6 +25,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -246,14 +247,14 @@ type deleteResourceFunc func(deleter *policiedResourcesDeleter, policy *v1.Polic
 var deleteResourceFuncs = []deleteResourceFunc{
 	detachRelatedRoles,
 	deleteRelatedRules,
-	//TODO delete project policy binding for projected scope policy
+	deleteRelatedProjectPolicies,
 }
 
 // deleteAllContent will use the dynamic client to delete each resource identified in groupVersionResources.
 // It returns an estimate of the time remaining before the remaining resources are deleted.
 // If estimate > 0, not all resources are guaranteed to be gone.
 func (d *policiedResourcesDeleter) deleteAllContent(policy *v1.Policy) error {
-	log.Debug("ProjectPolicy controller - deleteAllContent", log.String("policyName", policy.Name))
+	log.Debug("Policy controller - deleteAllContent", log.String("policyName", policy.Name))
 
 	for _, deleteFunc := range deleteResourceFuncs {
 		err := deleteFunc(d, policy)
@@ -267,13 +268,13 @@ func (d *policiedResourcesDeleter) deleteAllContent(policy *v1.Policy) error {
 }
 
 func deleteRelatedRules(deleter *policiedResourcesDeleter, policy *v1.Policy) error {
-	log.Info("ProjectPolicy controller - deleteRelatedRules", log.String("policyName", policy.Name))
+	log.Info("Policy controller - deleteRelatedRules", log.String("policyName", policy.Name))
 	_, err := deleter.enforcer.DeleteRole(policy.Name)
 	return err
 }
 
 func detachRelatedRoles(deleter *policiedResourcesDeleter, policy *v1.Policy) error {
-	log.Info("ProjectPolicy controller - detachRelatedRoles", log.String("policyName", policy.Name))
+	log.Info("Policy controller - detachRelatedRoles", log.String("policyName", policy.Name))
 	roles := deleter.enforcer.GetUsersForRoleInDomain(policy.Name, authutil.DefaultDomain)
 
 	log.Info("Try removing related rules for policy", log.String("policy", policy.Name), log.Strings("rules", roles))
@@ -303,6 +304,32 @@ func detachRelatedRoles(deleter *policiedResourcesDeleter, policy *v1.Policy) er
 			if err != nil {
 				errs = append(errs, err)
 			}
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func deleteRelatedProjectPolicies(deleter *policiedResourcesDeleter, policy *v1.Policy) error {
+	log.Info("Policy controller - deleteRelatedProjectPolicies", log.String("policyName", policy.Name))
+
+	tenantUserSelector := fields.AndSelectors(
+		fields.OneTermEqualSelector("spec.policyID", policy.Name))
+
+	projectPolicyList, err := deleter.authClient.ProjectPolicies().List(metav1.ListOptions{FieldSelector: tenantUserSelector.String()})
+	if err != nil {
+		log.Error("List project policies for policy failed", log.String("policy", policy.Name), log.Err(err))
+		return err
+	}
+
+	var errs []error
+	for _, item := range projectPolicyList.Items {
+		log.Info("Delete project policy", log.Any("item", item))
+		err := deleter.authClient.ProjectPolicies().Delete(item.Name, &metav1.DeleteOptions{})
+		if err != nil && !errors.IsNotFound(err) {
+			log.Error("Delete project policy failed", log.String("project policy", item.Name), log.Err(err))
+			errs = append(errs, err)
+			continue
 		}
 	}
 

@@ -84,8 +84,18 @@ func FilterProjectPolicy(ctx context.Context, binding *auth.ProjectPolicy) error
 		return nil
 	}
 	if binding.Spec.TenantID != tenantID {
-		return errors.NewNotFound(v1.Resource("ProjectPolicy"), binding.ObjectMeta.Name)
+		return errors.NewNotFound(v1.Resource("projectPolicy"), binding.ObjectMeta.Name)
 	}
+
+	projectID := filter.ProjectIDFrom(ctx)
+	if projectID == "" {
+		return nil
+	}
+
+	if binding.Spec.ProjectID != projectID {
+		return errors.NewNotFound(v1.Resource("projectPolicy"), binding.ObjectMeta.Name)
+	}
+
 	return nil
 }
 
@@ -98,6 +108,16 @@ func FilterRole(ctx context.Context, role *auth.Role) error {
 	if role.Spec.TenantID != tenantID {
 		return errors.NewNotFound(v1.Resource("role"), role.ObjectMeta.Name)
 	}
+
+	projectID := filter.ProjectIDFrom(ctx)
+	if projectID == "" {
+		return nil
+	}
+
+	if role.Spec.ProjectID != projectID {
+		return errors.NewNotFound(v1.Resource("role"), role.ObjectMeta.Name)
+	}
+
 	return nil
 }
 
@@ -151,5 +171,25 @@ func PredicateProjectListOptions(ctx context.Context, options *metainternal.List
 		return options
 	}
 	options.FieldSelector = fields.AndSelectors(options.FieldSelector, fields.OneTermEqualSelector("spec.scope", string(auth.PolicyProject)))
+	return options
+}
+
+// PredicateProjectIDListOptions determines the query options according to the project
+// attribute of the request user.
+func PredicateProjectIDListOptions(ctx context.Context, options *metainternal.ListOptions) *metainternal.ListOptions {
+	projectID := filter.ProjectIDFrom(ctx)
+	if projectID == "" {
+		return options
+	}
+	if options == nil {
+		return &metainternal.ListOptions{
+			FieldSelector: fields.OneTermEqualSelector("spec.projectID", projectID),
+		}
+	}
+	if options.FieldSelector == nil {
+		options.FieldSelector = fields.OneTermEqualSelector("spec.projectID", projectID)
+		return options
+	}
+	options.FieldSelector = fields.AndSelectors(options.FieldSelector, fields.OneTermEqualSelector("spec.projectID", projectID))
 	return options
 }
