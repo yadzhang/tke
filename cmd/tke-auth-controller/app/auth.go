@@ -25,7 +25,7 @@ import (
 	"tkestack.io/tke/pkg/auth/controller/config"
 	"tkestack.io/tke/pkg/auth/controller/group"
 	"tkestack.io/tke/pkg/auth/controller/localidentity"
-	"tkestack.io/tke/pkg/auth/controller/projectpolicy"
+	"tkestack.io/tke/pkg/auth/controller/projectpolicybinding"
 	"tkestack.io/tke/pkg/auth/controller/role"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -77,9 +77,9 @@ func startProjectPolicyController(ctx ControllerContext) (http.Handler, bool, er
 		return nil, false, nil
 	}
 
-	ctrl := projectpolicy.NewController(
+	ctrl := projectpolicybinding.NewController(
 		ctx.ClientBuilder.ClientOrDie("projectpolicy-controller"),
-		ctx.InformerFactory.Auth().V1().ProjectPolicies(),
+		ctx.InformerFactory.Auth().V1().ProjectPolicyBindings(),
 		ctx.InformerFactory.Auth().V1().Rules(),
 		ctx.Enforcer,
 		projectPolicySyncPeriod,

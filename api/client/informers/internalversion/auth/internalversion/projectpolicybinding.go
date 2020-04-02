@@ -33,58 +33,58 @@ import (
 	internalversion "tkestack.io/tke/api/client/listers/auth/internalversion"
 )
 
-// ProjectPolicyInformer provides access to a shared informer and lister for
-// ProjectPolicies.
-type ProjectPolicyInformer interface {
+// ProjectPolicyBindingInformer provides access to a shared informer and lister for
+// ProjectPolicyBindings.
+type ProjectPolicyBindingInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() internalversion.ProjectPolicyLister
+	Lister() internalversion.ProjectPolicyBindingLister
 }
 
-type projectPolicyInformer struct {
+type projectPolicyBindingInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 }
 
-// NewProjectPolicyInformer constructs a new informer for ProjectPolicy type.
+// NewProjectPolicyBindingInformer constructs a new informer for ProjectPolicyBinding type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewProjectPolicyInformer(client clientsetinternalversion.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredProjectPolicyInformer(client, resyncPeriod, indexers, nil)
+func NewProjectPolicyBindingInformer(client clientsetinternalversion.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredProjectPolicyBindingInformer(client, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredProjectPolicyInformer constructs a new informer for ProjectPolicy type.
+// NewFilteredProjectPolicyBindingInformer constructs a new informer for ProjectPolicyBinding type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredProjectPolicyInformer(client clientsetinternalversion.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredProjectPolicyBindingInformer(client clientsetinternalversion.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.Auth().ProjectPolicies().List(options)
+				return client.Auth().ProjectPolicyBindings().List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.Auth().ProjectPolicies().Watch(options)
+				return client.Auth().ProjectPolicyBindings().Watch(options)
 			},
 		},
-		&auth.ProjectPolicy{},
+		&auth.ProjectPolicyBinding{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *projectPolicyInformer) defaultInformer(client clientsetinternalversion.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredProjectPolicyInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *projectPolicyBindingInformer) defaultInformer(client clientsetinternalversion.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredProjectPolicyBindingInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *projectPolicyInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&auth.ProjectPolicy{}, f.defaultInformer)
+func (f *projectPolicyBindingInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&auth.ProjectPolicyBinding{}, f.defaultInformer)
 }
 
-func (f *projectPolicyInformer) Lister() internalversion.ProjectPolicyLister {
-	return internalversion.NewProjectPolicyLister(f.Informer().GetIndexer())
+func (f *projectPolicyBindingInformer) Lister() internalversion.ProjectPolicyBindingLister {
+	return internalversion.NewProjectPolicyBindingLister(f.Informer().GetIndexer())
 }

@@ -316,7 +316,7 @@ func deleteRelatedProjectPolicies(deleter *policiedResourcesDeleter, policy *v1.
 	tenantUserSelector := fields.AndSelectors(
 		fields.OneTermEqualSelector("spec.policyID", policy.Name))
 
-	projectPolicyList, err := deleter.authClient.ProjectPolicies().List(metav1.ListOptions{FieldSelector: tenantUserSelector.String()})
+	projectPolicyList, err := deleter.authClient.ProjectPolicyBindings().List(metav1.ListOptions{FieldSelector: tenantUserSelector.String()})
 	if err != nil {
 		log.Error("List project policies for policy failed", log.String("policy", policy.Name), log.Err(err))
 		return err
@@ -325,7 +325,7 @@ func deleteRelatedProjectPolicies(deleter *policiedResourcesDeleter, policy *v1.
 	var errs []error
 	for _, item := range projectPolicyList.Items {
 		log.Info("Delete project policy", log.Any("item", item))
-		err := deleter.authClient.ProjectPolicies().Delete(item.Name, &metav1.DeleteOptions{})
+		err := deleter.authClient.ProjectPolicyBindings().Delete(item.Name, &metav1.DeleteOptions{})
 		if err != nil && !errors.IsNotFound(err) {
 			log.Error("Delete project policy failed", log.String("project policy", item.Name), log.Err(err))
 			errs = append(errs, err)

@@ -114,7 +114,7 @@ func NewStorage(optsGetter generic.RESTOptionsGetter, authClient authinternalcli
 	}
 }
 
-// ValidateGetObjectAndTenantID validate name and tenantID, if success return ProjectPolicy
+// ValidateGetObjectAndTenantID validate name and tenantID, if success return ProjectPolicyBinding
 func ValidateGetObjectAndTenantID(ctx context.Context, store *registry.Store, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	obj, err := store.Get(ctx, name, options)
 	if err != nil {
@@ -128,7 +128,7 @@ func ValidateGetObjectAndTenantID(ctx context.Context, store *registry.Store, na
 	return o, nil
 }
 
-// ValidateExportObjectAndTenantID validate name and tenantID, if success return ProjectPolicy
+// ValidateExportObjectAndTenantID validate name and tenantID, if success return ProjectPolicyBinding
 func ValidateExportObjectAndTenantID(ctx context.Context, store *registry.Store, name string, options metav1.ExportOptions) (runtime.Object, error) {
 	obj, err := store.Export(ctx, name, options)
 	if err != nil {
@@ -324,7 +324,7 @@ func (r *REST) Delete(ctx context.Context, name string, deleteValidation rest.Va
 				existingPolicy, ok := existing.(*auth.Policy)
 				if !ok {
 					// wrong type
-					return nil, fmt.Errorf("expected *auth.ProjectPolicy, got %v", existing)
+					return nil, fmt.Errorf("expected *auth.ProjectPolicyBinding, got %v", existing)
 				}
 				if err := deleteValidation(ctx, existingPolicy); err != nil {
 					return nil, err

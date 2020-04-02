@@ -89,7 +89,7 @@ func NewController(client clientset.Interface, roleInformer authv1informer.RoleI
 				old, ok1 := oldObj.(*v1.Role)
 				cur, ok2 := newObj.(*v1.Role)
 				if ok1 && ok2 && controller.needsUpdate(old, cur) {
-					log.Info("Update enqueue")
+					log.Info("Update enqueue", log.String("role", cur.Name))
 					controller.enqueue(newObj)
 				}
 			},

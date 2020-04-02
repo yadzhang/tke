@@ -21,6 +21,7 @@ package projectrole
 import (
 	"context"
 	"fmt"
+
 	"tkestack.io/tke/pkg/apiserver/filter"
 
 	"github.com/casbin/casbin/v2"
@@ -71,8 +72,8 @@ func (Strategy) DefaultGarbageCollectionPolicy(ctx context.Context) rest.Garbage
 // object.
 func (Strategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
-	oldBinding, _ := old.(*auth.ProjectPolicy)
-	newBinding, _ := obj.(*auth.ProjectPolicy)
+	oldBinding, _ := old.(*auth.ProjectPolicyBinding)
+	newBinding, _ := obj.(*auth.ProjectPolicyBinding)
 	if len(tenantID) != 0 {
 		if oldBinding.Spec.TenantID != tenantID {
 			log.Panic("Unauthorized update policy information", log.String("oldTenantID", oldBinding.Spec.TenantID), log.String("newTenantID", newBinding.Spec.TenantID), log.String("userTenantID", tenantID))
@@ -97,7 +98,7 @@ func (Strategy) Export(ctx context.Context, obj runtime.Object, exact bool) erro
 // PrepareForCreate is invoked on create before validation to normalize
 // the object.
 func (Strategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
-	binding, _ := obj.(*auth.ProjectPolicy)
+	binding, _ := obj.(*auth.ProjectPolicyBinding)
 	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
 	if len(tenantID) != 0 {
 		binding.Spec.TenantID = tenantID
@@ -132,7 +133,7 @@ func (Strategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
 
 // Validate validates a new policy.
 func (s *Strategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
-	return ValidateProjectPolicy(obj.(*auth.ProjectPolicy), s.authClient)
+	return ValidateProjectPolicy(obj.(*auth.ProjectPolicyBinding), s.authClient)
 }
 
 // AllowCreateOnUpdate is false for policies.
@@ -153,12 +154,12 @@ func (Strategy) Canonicalize(obj runtime.Object) {
 
 // ValidateUpdate is the default update validation for an end policy.
 func (s *Strategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	return ValidateProjectPolicyUpdate(obj.(*auth.ProjectPolicy), old.(*auth.ProjectPolicy), s.authClient)
+	return ValidateProjectPolicyUpdate(obj.(*auth.ProjectPolicyBinding), old.(*auth.ProjectPolicyBinding), s.authClient)
 }
 
 // GetAttrs returns labels and fields of a given object for filtering purposes.
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
-	binding, ok := obj.(*auth.ProjectPolicy)
+	binding, ok := obj.(*auth.ProjectPolicyBinding)
 	if !ok {
 		return nil, nil, fmt.Errorf("not a policy")
 	}
@@ -180,7 +181,7 @@ func MatchProjectPolicy(label labels.Selector, field fields.Selector) storage.Se
 }
 
 // ToSelectableFields returns a field set that represents the object
-func ToSelectableFields(binding *auth.ProjectPolicy) fields.Set {
+func ToSelectableFields(binding *auth.ProjectPolicyBinding) fields.Set {
 	objectMetaFieldsSet := generic.ObjectMetaFieldsSet(&binding.ObjectMeta, false)
 	specificFieldsSet := fields.Set{
 		"spec.projectID": binding.Spec.ProjectID,
@@ -191,7 +192,7 @@ func ToSelectableFields(binding *auth.ProjectPolicy) fields.Set {
 }
 
 func ShouldDeleteDuringUpdate(ctx context.Context, key string, obj, existing runtime.Object) bool {
-	pol, ok := obj.(*auth.ProjectPolicy)
+	pol, ok := obj.(*auth.ProjectPolicyBinding)
 	if !ok {
 		log.Errorf("unexpected object, key:%s", key)
 		return false
@@ -216,8 +217,8 @@ func NewStatusStrategy(strategy *Strategy) *StatusStrategy {
 // sort order-insensitive list fields, etc.  This should not remove fields
 // whose presence would be considered a validation error.
 func (StatusStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
-	newBinding := obj.(*auth.ProjectPolicy)
-	oldBinding := old.(*auth.ProjectPolicy)
+	newBinding := obj.(*auth.ProjectPolicyBinding)
+	oldBinding := old.(*auth.ProjectPolicyBinding)
 	newBinding.Spec = oldBinding.Spec
 }
 
@@ -225,7 +226,7 @@ func (StatusStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Obj
 // filled in before the object is persisted.  This method should not mutate
 // the object.
 func (s *StatusStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	return ValidateProjectPolicyUpdate(obj.(*auth.ProjectPolicy), old.(*auth.ProjectPolicy), s.authClient)
+	return ValidateProjectPolicyUpdate(obj.(*auth.ProjectPolicyBinding), old.(*auth.ProjectPolicyBinding), s.authClient)
 }
 
 // FinalizeStrategy implements finalizer logic for Machine.
@@ -245,8 +246,8 @@ func NewFinalizerStrategy(strategy *Strategy) *FinalizeStrategy {
 // sort order-insensitive list fields, etc.  This should not remove fields
 // whose presence would be considered a validation error.
 func (FinalizeStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
-	newBinding := obj.(*auth.ProjectPolicy)
-	oldBinding := old.(*auth.ProjectPolicy)
+	newBinding := obj.(*auth.ProjectPolicyBinding)
+	oldBinding := old.(*auth.ProjectPolicyBinding)
 	newBinding.Status = oldBinding.Status
 }
 
@@ -254,5 +255,5 @@ func (FinalizeStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.O
 // filled in before the object is persisted.  This method should not mutate
 // the object.
 func (s *FinalizeStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	return ValidateProjectPolicyUpdate(obj.(*auth.ProjectPolicy), old.(*auth.ProjectPolicy), s.authClient)
+	return ValidateProjectPolicyUpdate(obj.(*auth.ProjectPolicyBinding), old.(*auth.ProjectPolicyBinding), s.authClient)
 }

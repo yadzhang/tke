@@ -20,6 +20,7 @@ package storage
 
 import (
 	"context"
+
 	"tkestack.io/tke/pkg/apiserver/filter"
 	"tkestack.io/tke/pkg/auth/util"
 
@@ -45,7 +46,7 @@ type ProjectGroupREST struct {
 // New returns an empty object that can be used with Create after request data
 // has been put into it.
 func (r *ProjectGroupREST) New() runtime.Object {
-	return &auth.ProjectPolicy{}
+	return &auth.ProjectPolicyBinding{}
 }
 
 // NewList returns an empty object that can be used with the List call.
@@ -76,7 +77,7 @@ func (r *ProjectGroupREST) List(ctx context.Context, options *metainternal.ListO
 		return nil, errors.NewBadRequest("must specify projectID header")
 	}
 
-	proBinding, err := r.authClient.ProjectPolicies().Get(util.ProjectPolicyName(projectID,policyID), metav1.GetOptions{})
+	proBinding, err := r.authClient.ProjectPolicyBindings().Get(util.ProjectPolicyName(projectID, policyID), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

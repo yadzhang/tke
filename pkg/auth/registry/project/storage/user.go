@@ -21,6 +21,7 @@ package storage
 import (
 	"context"
 	"fmt"
+
 	"tkestack.io/tke/pkg/apiserver/filter"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -63,23 +64,25 @@ func (r *UserREST) List(ctx context.Context, options *metainternal.ListOptions) 
 		projectID = requestInfo.Name
 	}
 
+	log.Info("List project users", log.String("projectID", projectID))
+
 	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
 
-	projectPolicyList, err := r.authClient.ProjectPolicies().List(metav1.ListOptions{
+	projectPolicyList, err := r.authClient.ProjectPolicyBindings().List(metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("spec.projectID=%s", projectID),
 	})
 
+	log.Info("List project users", log.Any("projectID", projectPolicyList))
 	if err != nil {
 		log.Error("get project policies failed", log.String("project", projectID), log.Err(err))
 		return nil, err
 	}
 
-	userPolicyMap := getUserPolicyMap(projectPolicyList)
-
 	if tenantID == "" && len(projectPolicyList.Items) > 0 {
 		tenantID = projectPolicyList.Items[0].Spec.TenantID
 	}
 
+	userPolicyMap := getUserPolicyMap(projectPolicyList)
 	userList := &auth.UserList{}
 	policyNameMap := map[string]string{}
 	for userID, policyIDs := range userPolicyMap {
@@ -112,7 +115,7 @@ func (r *UserREST) List(ctx context.Context, options *metainternal.ListOptions) 
 }
 
 // GetUserPolicyMap get policies for members in project.
-func getUserPolicyMap(policyList *auth.ProjectPolicyList) map[string][]string {
+func getUserPolicyMap(policyList *auth.ProjectPolicyBindingList) map[string][]string {
 	userPolicyMap := make(map[string][]string)
 	for _, policy := range policyList.Items {
 		for _, subj := range policy.Spec.Users {

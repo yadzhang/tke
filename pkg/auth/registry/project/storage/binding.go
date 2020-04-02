@@ -47,7 +47,7 @@ var _ = rest.Creater(&BindingREST{})
 // New returns an empty object that can be used with Create after request data
 // has been put into it.
 func (r *BindingREST) New() runtime.Object {
-	return &auth.ProjectPolicyBinding{}
+	return &auth.ProjectPolicyBindingRequest{}
 }
 
 func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error) {
@@ -56,7 +56,7 @@ func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createVali
 		return nil, errors.NewBadRequest("unable to get request info from context")
 	}
 
-	bind := obj.(*auth.ProjectPolicyBinding)
+	bind := obj.(*auth.ProjectPolicyBindingRequest)
 	if len(bind.Policies) == 0 {
 		return nil, errors.NewBadRequest("must specify policies")
 	}
@@ -69,7 +69,7 @@ func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createVali
 		projectID = requestInfo.Name
 	}
 
-	projectPolicyList := &auth.ProjectPolicyList{}
+	projectPolicyList := &auth.ProjectPolicyBindingList{}
 	var errs []error
 	for _, policyID := range bind.Policies {
 		policy, err := r.authClient.Policies().Get(policyID, metav1.GetOptions{})
@@ -84,11 +84,11 @@ func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createVali
 			continue
 		}
 
-		projectPolicy, err := r.authClient.ProjectPolicies().Get(util.ProjectPolicyName(projectID, policy.Name), metav1.GetOptions{})
+		projectPolicy, err := r.authClient.ProjectPolicyBindings().Get(util.ProjectPolicyName(projectID, policy.Name), metav1.GetOptions{})
 		if err != nil && apierrors.IsNotFound(err) {
 			// if projectPolicy not exist, create a new one
-			projectPolicy, err = r.authClient.ProjectPolicies().Create(&auth.ProjectPolicy{
-				Spec: auth.ProjectPolicySpec{
+			projectPolicy, err = r.authClient.ProjectPolicyBindings().Create(&auth.ProjectPolicyBinding{
+				Spec: auth.ProjectPolicyBindingSpec{
 					TenantID:  policy.Spec.TenantID,
 					ProjectID: projectID,
 					PolicyID:  policy.Name,
@@ -96,7 +96,7 @@ func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createVali
 			})
 			if err != nil {
 				if apierrors.IsAlreadyExists(err) {
-					projectPolicy, err = r.authClient.ProjectPolicies().Get(util.ProjectPolicyName(projectID, policy.Name), metav1.GetOptions{})
+					projectPolicy, err = r.authClient.ProjectPolicyBindings().Get(util.ProjectPolicyName(projectID, policy.Name), metav1.GetOptions{})
 				}
 			}
 		}
@@ -119,7 +119,7 @@ func (r *BindingREST) Create(ctx context.Context, obj runtime.Object, createVali
 			}
 		}
 		log.Info("bind project policy subjects", log.String("policy", policy.Name), log.Any("users", projectPolicy.Spec.Users), log.Any("groups", projectPolicy.Spec.Groups))
-		projectPolicy, err = r.authClient.ProjectPolicies().Update(projectPolicy)
+		projectPolicy, err = r.authClient.ProjectPolicyBindings().Update(projectPolicy)
 		if err != nil {
 			log.Error("Update project policy failed", log.String("policyID", projectPolicy.Name), log.Err(err))
 			errs = append(errs, err)

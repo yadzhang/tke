@@ -65,11 +65,11 @@ const (
 	// LocalIdentityFinalize is an internal finalizer values to LocalIdentity.
 	LocalIdentityFinalize FinalizerName = "localidentity"
 
-	// PolicyFinalize is an internal finalizer values to ProjectPolicy.
+	// PolicyFinalize is an internal finalizer values to ProjectPolicyBinding.
 	PolicyFinalize FinalizerName = "policy"
 
-	// BindingFinalize is an internal finalizer values to ProjectPolicy.
-	BindingFinalize FinalizerName = "projectpolicy"
+	// BindingFinalize is an internal finalizer values to ProjectPolicyBinding.
+	BindingFinalize FinalizerName = "projectpolicybinding"
 
 	// PolicyFinalize is an internal finalizer values to LocalGroup.
 	LocalGroupFinalize FinalizerName = "localgroup"
@@ -432,7 +432,7 @@ const (
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ProjectPolicy represents a policy document for access control.
+// ProjectPolicyBinding represents a policy document for access control.
 type Policy struct {
 	metav1.TypeMeta
 	metav1.ObjectMeta
@@ -523,17 +523,17 @@ type PolicyStatus struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ProjectPolicy represents a subjects bind to a policy in a project scope.
-type ProjectPolicy struct {
+// ProjectPolicyBinding represents a subjects bind to a policy in a project scope.
+type ProjectPolicyBinding struct {
 	metav1.TypeMeta
 	metav1.ObjectMeta
 
-	Spec   ProjectPolicySpec
-	Status ProjectPolicyStatus
+	Spec   ProjectPolicyBindingSpec
+	Status ProjectPolicyBindingStatus
 }
 
-// ProjectPolicySpec defines the desired identities of ProjectPolicySpec document in this set.
-type ProjectPolicySpec struct {
+// ProjectPolicyBindingSpec defines the desired identities of ProjectPolicyBindingSpec document in this set.
+type ProjectPolicyBindingSpec struct {
 	Finalizers []FinalizerName
 	TenantID   string
 	ProjectID  string
@@ -545,7 +545,7 @@ type ProjectPolicySpec struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // PolicyBinding references the request to bind or unbind policies to the role.
-type ProjectPolicyBinding struct {
+type ProjectPolicyBindingRequest struct {
 	metav1.TypeMeta
 
 	// Policies holds the policies will bind to the subjects.
@@ -556,7 +556,7 @@ type ProjectPolicyBinding struct {
 	Groups []Subject
 }
 
-// BindingPhase defines the phase of ProjectPolicy constructor.
+// BindingPhase defines the phase of ProjectPolicyBinding constructor.
 type BindingPhase string
 
 const (
@@ -565,20 +565,20 @@ const (
 	BindingTerminating BindingPhase = "Terminating"
 )
 
-// ProjectPolicyStatus represents information about the status of a ProjectPolicy.
-type ProjectPolicyStatus struct {
+// ProjectPolicyBindingStatus represents information about the status of a ProjectPolicyBinding.
+type ProjectPolicyBindingStatus struct {
 	Phase BindingPhase
 }
 
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ProjectPolicy is the whole list of all ProjectPolicys.
-type ProjectPolicyList struct {
+// ProjectPolicyBindingList is the whole list of all ProjectPolicyBindings.
+type ProjectPolicyBindingList struct {
 	metav1.TypeMeta
 	metav1.ListMeta
 	// List of policies.
-	Items []ProjectPolicy
+	Items []ProjectPolicyBinding
 }
 
 // +genclient
@@ -614,12 +614,12 @@ type ProjectRoleStatus struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ProjectPolicy is the whole list of all ProjectPolicys.
+// ProjectPolicyBinding is the whole list of all ProjectPolicys.
 type ProjectRoleList struct {
 	metav1.TypeMeta
 	metav1.ListMeta
 	// List of policies.
-	Items []ProjectPolicy
+	Items []ProjectPolicyBinding
 }
 
 const (

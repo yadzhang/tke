@@ -95,7 +95,7 @@ func NewController(client clientset.Interface, groupInformer authv1informer.Loca
 				old, ok1 := oldObj.(*v1.LocalGroup)
 				cur, ok2 := newObj.(*v1.LocalGroup)
 				if ok1 && ok2 && controller.needsUpdate(old, cur) {
-					log.Info("Update enqueue")
+					log.Info("Update enqueue", log.String("group", cur.Name))
 					controller.enqueue(newObj)
 				}
 			},

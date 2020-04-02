@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package projectpolicy
+package projectpolicybinding
 
 import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -33,8 +33,8 @@ import (
 // subdomain.
 var ValidateBindingName = apiMachineryValidation.NameIsDNSLabel
 
-// ValidateProjectPolicy tests if required fields in the policy are set.
-func ValidateProjectPolicy(binding *auth.ProjectPolicy, authClient authinternalclient.AuthInterface) field.ErrorList {
+// ValidateProjectPolicyBinding tests if required fields in the projectpolicybinding are set.
+func ValidateProjectPolicyBinding(binding *auth.ProjectPolicyBinding, authClient authinternalclient.AuthInterface) field.ErrorList {
 	allErrs := apiMachineryValidation.ValidateObjectMeta(&binding.ObjectMeta, false, ValidateBindingName, field.NewPath("metadata"))
 
 	fldSpecPath := field.NewPath("spec")
@@ -128,11 +128,11 @@ func ValidateProjectPolicy(binding *auth.ProjectPolicy, authClient authinternalc
 	return allErrs
 }
 
-// ValidateProjectPolicyUpdate tests if required fields in the policy are set during
+// ValidateProjectPolicyBindingUpdate tests if required fields in the policy are set during
 // an update.
-func ValidateProjectPolicyUpdate(new *auth.ProjectPolicy, old *auth.ProjectPolicy, authClient authinternalclient.AuthInterface) field.ErrorList {
+func ValidateProjectPolicyBindingUpdate(new *auth.ProjectPolicyBinding, old *auth.ProjectPolicyBinding, authClient authinternalclient.AuthInterface) field.ErrorList {
 	allErrs := apiMachineryValidation.ValidateObjectMetaUpdate(&new.ObjectMeta, &old.ObjectMeta, field.NewPath("metadata"))
-	allErrs = append(allErrs, ValidateProjectPolicy(new, authClient)...)
+	allErrs = append(allErrs, ValidateProjectPolicyBinding(new, authClient)...)
 
 	fldSpecPath := field.NewPath("spec")
 	if new.Spec.TenantID != old.Spec.TenantID {

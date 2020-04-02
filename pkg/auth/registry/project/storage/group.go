@@ -21,6 +21,7 @@ package storage
 import (
 	"context"
 	"fmt"
+
 	"tkestack.io/tke/pkg/apiserver/filter"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -63,7 +64,7 @@ func (r *GroupREST) List(ctx context.Context, options *metainternal.ListOptions)
 	}
 
 	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
-	projectPolicyList, err := r.authClient.ProjectPolicies().List(metav1.ListOptions{
+	projectPolicyList, err := r.authClient.ProjectPolicyBindings().List(metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("spec.projectID=%s", projectID),
 	})
 	if err != nil {
@@ -109,7 +110,7 @@ func (r *GroupREST) List(ctx context.Context, options *metainternal.ListOptions)
 }
 
 // getGroupsPolicyMap get policies for groups in project.
-func getGroupsPolicyMap(policyList *auth.ProjectPolicyList) map[string][]string {
+func getGroupsPolicyMap(policyList *auth.ProjectPolicyBindingList) map[string][]string {
 	groupPolicyMap := make(map[string][]string)
 	for _, policy := range policyList.Items {
 		for _, subj := range policy.Spec.Groups {

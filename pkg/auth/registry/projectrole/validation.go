@@ -34,7 +34,7 @@ import (
 var ValidateBindingName = apiMachineryValidation.NameIsDNSLabel
 
 // ValidateProjectPolicy tests if required fields in the policy are set.
-func ValidateProjectPolicy(binding *auth.ProjectPolicy, authClient authinternalclient.AuthInterface) field.ErrorList {
+func ValidateProjectPolicy(binding *auth.ProjectPolicyBinding, authClient authinternalclient.AuthInterface) field.ErrorList {
 	allErrs := apiMachineryValidation.ValidateObjectMeta(&binding.ObjectMeta, false, ValidateBindingName, field.NewPath("metadata"))
 
 	fldSpecPath := field.NewPath("spec")
@@ -130,7 +130,7 @@ func ValidateProjectPolicy(binding *auth.ProjectPolicy, authClient authinternalc
 
 // ValidateProjectPolicyUpdate tests if required fields in the policy are set during
 // an update.
-func ValidateProjectPolicyUpdate(new *auth.ProjectPolicy, old *auth.ProjectPolicy, authClient authinternalclient.AuthInterface) field.ErrorList {
+func ValidateProjectPolicyUpdate(new *auth.ProjectPolicyBinding, old *auth.ProjectPolicyBinding, authClient authinternalclient.AuthInterface) field.ErrorList {
 	allErrs := apiMachineryValidation.ValidateObjectMetaUpdate(&new.ObjectMeta, &old.ObjectMeta, field.NewPath("metadata"))
 	allErrs = append(allErrs, ValidateProjectPolicy(new, authClient)...)
 

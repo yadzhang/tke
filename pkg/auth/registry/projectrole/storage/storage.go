@@ -43,7 +43,7 @@ import (
 	"tkestack.io/tke/pkg/apiserver/authentication"
 	"tkestack.io/tke/pkg/apiserver/filter"
 	apiserverutil "tkestack.io/tke/pkg/apiserver/util"
-	"tkestack.io/tke/pkg/auth/registry/projectpolicy"
+	"tkestack.io/tke/pkg/auth/registry/projectpolicybinding"
 	"tkestack.io/tke/pkg/auth/util"
 	"tkestack.io/tke/pkg/util/log"
 )
@@ -57,23 +57,23 @@ type Storage struct {
 
 // NewStorage returns a Storage object that will work against policies.
 func NewStorage(optsGetter generic.RESTOptionsGetter, authClient authinternalclient.AuthInterface, enforcer *casbin.SyncedEnforcer, privilegedUsername string) *Storage {
-	strategy := projectpolicy.NewStrategy(enforcer, authClient)
+	strategy := projectpolicybinding.NewStrategy(enforcer, authClient)
 	store := &registry.Store{
-		NewFunc:                  func() runtime.Object { return &auth.ProjectPolicy{} },
-		NewListFunc:              func() runtime.Object { return &auth.ProjectPolicyList{} },
+		NewFunc:                  func() runtime.Object { return &auth.ProjectPolicyBinding{} },
+		NewListFunc:              func() runtime.Object { return &auth.ProjectPolicyBindingList{} },
 		DefaultQualifiedResource: auth.Resource("ProjectPolicys"),
-		PredicateFunc:            projectpolicy.MatchProjectPolicy,
+		PredicateFunc:            projectpolicybinding.MatchProjectPolicy,
 
 		CreateStrategy: strategy,
 		//	AfterCreate:    strategy.AfterCreate,
 		UpdateStrategy: strategy,
 		DeleteStrategy: strategy,
 
-		ShouldDeleteDuringUpdate: projectpolicy.ShouldDeleteDuringUpdate,
+		ShouldDeleteDuringUpdate: projectpolicybinding.ShouldDeleteDuringUpdate,
 	}
 	options := &generic.StoreOptions{
 		RESTOptions: optsGetter,
-		AttrFunc:    projectpolicy.GetAttrs,
+		AttrFunc:    projectpolicybinding.GetAttrs,
 	}
 
 	if err := store.CompleteWithOptions(options); err != nil {
@@ -81,40 +81,40 @@ func NewStorage(optsGetter generic.RESTOptionsGetter, authClient authinternalcli
 	}
 
 	statusStore := *store
-	statusStore.UpdateStrategy = projectpolicy.NewStatusStrategy(strategy)
-	statusStore.ExportStrategy = projectpolicy.NewStatusStrategy(strategy)
+	statusStore.UpdateStrategy = projectpolicybinding.NewStatusStrategy(strategy)
+	statusStore.ExportStrategy = projectpolicybinding.NewStatusStrategy(strategy)
 
 	finalizeStore := *store
-	finalizeStore.UpdateStrategy = projectpolicy.NewFinalizerStrategy(strategy)
-	finalizeStore.ExportStrategy = projectpolicy.NewFinalizerStrategy(strategy)
+	finalizeStore.UpdateStrategy = projectpolicybinding.NewFinalizerStrategy(strategy)
+	finalizeStore.ExportStrategy = projectpolicybinding.NewFinalizerStrategy(strategy)
 	return &Storage{
 		ProjectPolicy: &REST{store, privilegedUsername},
 		Status:        &StatusREST{&statusStore},
 	}
 }
 
-// ValidateGetObjectAndTenantID validate name and tenantID, if success return ProjectPolicy
+// ValidateGetObjectAndTenantID validate name and tenantID, if success return ProjectPolicyBinding
 func ValidateGetObjectAndTenantID(ctx context.Context, store *registry.Store, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	obj, err := store.Get(ctx, name, options)
 	if err != nil {
 		return nil, err
 	}
 
-	o := obj.(*auth.ProjectPolicy)
+	o := obj.(*auth.ProjectPolicyBinding)
 	if err := util.FilterProjectPolicy(ctx, o); err != nil {
 		return nil, err
 	}
 	return o, nil
 }
 
-// ValidateExportObjectAndTenantID validate name and tenantID, if success return ProjectPolicy
+// ValidateExportObjectAndTenantID validate name and tenantID, if success return ProjectPolicyBinding
 func ValidateExportObjectAndTenantID(ctx context.Context, store *registry.Store, name string, options metav1.ExportOptions) (runtime.Object, error) {
 	obj, err := store.Export(ctx, name, options)
 	if err != nil {
 		return nil, err
 	}
 
-	o := obj.(*auth.ProjectPolicy)
+	o := obj.(*auth.ProjectPolicyBinding)
 	if err := util.FilterProjectPolicy(ctx, o); err != nil {
 		return nil, err
 	}
@@ -298,10 +298,10 @@ func (r *REST) Delete(ctx context.Context, name string, deleteValidation rest.Va
 		err = r.Store.Storage.GuaranteedUpdate(
 			ctx, key, out, false, &preconditions,
 			storage.SimpleUpdate(func(existing runtime.Object) (runtime.Object, error) {
-				existingBinding, ok := existing.(*auth.ProjectPolicy)
+				existingBinding, ok := existing.(*auth.ProjectPolicyBinding)
 				if !ok {
 					// wrong type
-					return nil, fmt.Errorf("expected *auth.ProjectPolicy, got %v", existing)
+					return nil, fmt.Errorf("expected *auth.ProjectPolicyBinding, got %v", existing)
 				}
 				if err := deleteValidation(ctx, existingBinding); err != nil {
 					return nil, err

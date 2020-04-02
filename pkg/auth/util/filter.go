@@ -78,7 +78,7 @@ func FilterPolicy(ctx context.Context, policy *auth.Policy) error {
 }
 
 // FilterPolicy is used to filter policy that do not belong to the tenant.
-func FilterProjectPolicy(ctx context.Context, binding *auth.ProjectPolicy) error {
+func FilterProjectPolicy(ctx context.Context, binding *auth.ProjectPolicyBinding) error {
 	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
 	if tenantID == "" {
 		return nil

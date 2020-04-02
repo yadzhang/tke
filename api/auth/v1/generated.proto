@@ -549,17 +549,25 @@ message PolicyStatus {
   repeated Subject groups = 3;
 }
 
-// ProjectPolicy is a collection of subjects bond to policies in a project scope.
-message ProjectPolicy {
+// ProjectPolicyBinding is a collection of subjects bond to policies in a project scope.
+message ProjectPolicyBinding {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
 
-  optional ProjectPolicySpec spec = 2;
+  optional ProjectPolicyBindingSpec spec = 2;
 
-  optional ProjectPolicyStatus status = 3;
+  optional ProjectPolicyBindingStatus status = 3;
 }
 
-// PolicyBinding references the request to bind or unbind policies to the role.
-message ProjectPolicyBinding {
+// ProjectPolicyBindingList is the whole list of all ProjectPolicyBindings.
+message ProjectPolicyBindingList {
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
+
+  // List of policies.
+  repeated ProjectPolicyBinding items = 2;
+}
+
+// ProjectPolicyBindingRequest references the request to bind or unbind policies to the role.
+message ProjectPolicyBindingRequest {
   // Policies holds the policies will bind to the subjects.
   // +optional
   repeated string policies = 1;
@@ -569,16 +577,8 @@ message ProjectPolicyBinding {
   repeated Subject groups = 3;
 }
 
-// ProjectPolicy is the whole list of all ProjectPolicys.
-message ProjectPolicyList {
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
-
-  // List of policies.
-  repeated ProjectPolicy items = 2;
-}
-
-// ProjectPolicySpec defines the desired identities of ProjectPolicySpec document in this set.
-message ProjectPolicySpec {
+// ProjectPolicyBindingSpec defines the desired identities of ProjectPolicyBindingSpec document in this set.
+message ProjectPolicyBindingSpec {
   // Spec defines the desired identities of role document in this set.
   repeated string finalizers = 1;
 
@@ -593,8 +593,8 @@ message ProjectPolicySpec {
   repeated Subject groups = 6;
 }
 
-// ProjectPolicyStatus represents information about the status of a ProjectPolicy.
-message ProjectPolicyStatus {
+// ProjectPolicyBindingStatus represents information about the status of a ProjectPolicyBinding.
+message ProjectPolicyBindingStatus {
   optional string phase = 1;
 }
 

@@ -38,7 +38,7 @@ type AuthV1Interface interface {
 	LocalGroupsGetter
 	LocalIdentitiesGetter
 	PoliciesGetter
-	ProjectPoliciesGetter
+	ProjectPolicyBindingsGetter
 	RolesGetter
 	RulesGetter
 	UsersGetter
@@ -89,8 +89,8 @@ func (c *AuthV1Client) Policies() PolicyInterface {
 	return newPolicies(c)
 }
 
-func (c *AuthV1Client) ProjectPolicies() ProjectPolicyInterface {
-	return newProjectPolicies(c)
+func (c *AuthV1Client) ProjectPolicyBindings() ProjectPolicyBindingInterface {
+	return newProjectPolicyBindings(c)
 }
 
 func (c *AuthV1Client) Roles() RoleInterface {

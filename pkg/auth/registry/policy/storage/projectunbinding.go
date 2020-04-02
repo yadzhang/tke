@@ -18,7 +18,6 @@
 
 package storage
 
-
 import (
 	"context"
 
@@ -76,7 +75,7 @@ func (r *ProjectUnBindingREST) Create(ctx context.Context, obj runtime.Object, c
 	}
 
 	bind := obj.(*auth.Binding)
-	projectPolicyBinding, err := r.authClient.ProjectPolicies().Get(util.ProjectPolicyName(projectID, policyID), metav1.GetOptions{})
+	projectPolicyBinding, err := r.authClient.ProjectPolicyBindings().Get(util.ProjectPolicyName(projectID, policyID), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +97,5 @@ func (r *ProjectUnBindingREST) Create(ctx context.Context, obj runtime.Object, c
 
 	projectPolicyBinding.Spec.Groups = remainedGroups
 	log.Info("unbind policy subjects", log.String("policy", projectPolicyBinding.Name), log.Any("users", projectPolicyBinding.Spec.Users), log.Any("groups", projectPolicyBinding.Spec.Groups))
-	return r.authClient.ProjectPolicies().Update(projectPolicyBinding)
+	return r.authClient.ProjectPolicyBindings().Update(projectPolicyBinding)
 }
-

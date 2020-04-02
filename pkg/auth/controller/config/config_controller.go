@@ -246,7 +246,7 @@ func (c *Controller) pollReload(stopCh <-chan struct{}) {
 		select {
 		case <-timerC:
 			timerC = nil
-			log.Info("ProjectPolicy config directory changed, loadConfig it")
+			log.Info("ProjectPolicyBinding config directory changed, loadConfig it")
 
 			if err := c.loadConfig(); err != nil {
 				log.Error("Load config failed after changed", log.Err(err))

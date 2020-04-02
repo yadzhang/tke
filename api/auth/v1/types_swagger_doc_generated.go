@@ -424,47 +424,47 @@ func (PolicyStatus) SwaggerDoc() map[string]string {
 	return map_PolicyStatus
 }
 
-var map_ProjectPolicy = map[string]string{
-	"": "ProjectPolicy is a collection of subjects bond to policies in a project scope.",
-}
-
-func (ProjectPolicy) SwaggerDoc() map[string]string {
-	return map_ProjectPolicy
-}
-
 var map_ProjectPolicyBinding = map[string]string{
-	"":         "PolicyBinding references the request to bind or unbind policies to the role.",
-	"policies": "Policies holds the policies will bind to the subjects.",
+	"": "ProjectPolicyBinding is a collection of subjects bond to policies in a project scope.",
 }
 
 func (ProjectPolicyBinding) SwaggerDoc() map[string]string {
 	return map_ProjectPolicyBinding
 }
 
-var map_ProjectPolicyList = map[string]string{
-	"":      "ProjectPolicy is the whole list of all ProjectPolicys.",
+var map_ProjectPolicyBindingList = map[string]string{
+	"":      "ProjectPolicyBindingList is the whole list of all ProjectPolicyBindings.",
 	"items": "List of policies.",
 }
 
-func (ProjectPolicyList) SwaggerDoc() map[string]string {
-	return map_ProjectPolicyList
+func (ProjectPolicyBindingList) SwaggerDoc() map[string]string {
+	return map_ProjectPolicyBindingList
 }
 
-var map_ProjectPolicySpec = map[string]string{
-	"":           "ProjectPolicySpec defines the desired identities of ProjectPolicySpec document in this set.",
+var map_ProjectPolicyBindingRequest = map[string]string{
+	"":         "ProjectPolicyBindingRequest references the request to bind or unbind policies to the role.",
+	"policies": "Policies holds the policies will bind to the subjects.",
+}
+
+func (ProjectPolicyBindingRequest) SwaggerDoc() map[string]string {
+	return map_ProjectPolicyBindingRequest
+}
+
+var map_ProjectPolicyBindingSpec = map[string]string{
+	"":           "ProjectPolicyBindingSpec defines the desired identities of ProjectPolicyBindingSpec document in this set.",
 	"finalizers": "Spec defines the desired identities of role document in this set.",
 }
 
-func (ProjectPolicySpec) SwaggerDoc() map[string]string {
-	return map_ProjectPolicySpec
+func (ProjectPolicyBindingSpec) SwaggerDoc() map[string]string {
+	return map_ProjectPolicyBindingSpec
 }
 
-var map_ProjectPolicyStatus = map[string]string{
-	"": "ProjectPolicyStatus represents information about the status of a ProjectPolicy.",
+var map_ProjectPolicyBindingStatus = map[string]string{
+	"": "ProjectPolicyBindingStatus represents information about the status of a ProjectPolicyBinding.",
 }
 
-func (ProjectPolicyStatus) SwaggerDoc() map[string]string {
-	return map_ProjectPolicyStatus
+func (ProjectPolicyBindingStatus) SwaggerDoc() map[string]string {
+	return map_ProjectPolicyBindingStatus
 }
 
 var map_ResourceAttributes = map[string]string{

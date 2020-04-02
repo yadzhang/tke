@@ -106,10 +106,10 @@ func AddFieldLabelConversionsForPolicy(scheme *runtime.Scheme) error {
 }
 
 // AddFieldLabelConversionsForProjectPolicy adds a conversion function to convert
-// field selectors of ProjectPolicy from the given version to internal version
+// field selectors of ProjectPolicyBinding from the given version to internal version
 // representation.
 func AddFieldLabelConversionsForProjectPolicy(scheme *runtime.Scheme) error {
-	return scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("ProjectPolicy"),
+	return scheme.AddFieldLabelConversionFunc(SchemeGroupVersion.WithKind("ProjectPolicyBinding"),
 		func(label, value string) (string, string, error) {
 			switch label {
 			case "spec.tenantID",

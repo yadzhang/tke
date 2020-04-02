@@ -75,8 +75,8 @@ const (
 	// PolicyFinalize is an internal finalizer values to Policy.
 	PolicyFinalize FinalizerName = "policy"
 
-	// ProjectPolicyFinalize is an internal finalizer values to ProjectPolicy.
-	ProjectPolicyFinalize FinalizerName = "projectpolicy"
+	// ProjectPolicyFinalize is an internal finalizer values to ProjectPolicyBinding.
+	ProjectPolicyFinalize FinalizerName = "projectpolicybinding"
 
 	// GroupFinalize is an internal finalizer values to Group.
 	GroupFinalize FinalizerName = "localgroup"
@@ -545,17 +545,17 @@ type PolicyStatus struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ProjectPolicy is a collection of subjects bond to policies in a project scope.
-type ProjectPolicy struct {
+// ProjectPolicyBinding is a collection of subjects bond to policies in a project scope.
+type ProjectPolicyBinding struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   ProjectPolicySpec   `json:"spec" protobuf:"bytes,2,opt,name=spec"`
-	Status ProjectPolicyStatus `protobuf:"bytes,3,opt,name=status"`
+	Spec   ProjectPolicyBindingSpec   `json:"spec" protobuf:"bytes,2,opt,name=spec"`
+	Status ProjectPolicyBindingStatus `protobuf:"bytes,3,opt,name=status"`
 }
 
-// ProjectPolicySpec defines the desired identities of ProjectPolicySpec document in this set.
-type ProjectPolicySpec struct {
+// ProjectPolicyBindingSpec defines the desired identities of ProjectPolicyBindingSpec document in this set.
+type ProjectPolicyBindingSpec struct {
 	// Spec defines the desired identities of role document in this set.
 	Finalizers []FinalizerName `json:"finalizers,omitempty" protobuf:"bytes,1,rep,name=finalizers,casttype=FinalizerName"`
 	TenantID   string          `json:"tenantID" protobuf:"bytes,2,opt,name=tenantID"`
@@ -565,7 +565,7 @@ type ProjectPolicySpec struct {
 	Groups     []Subject       `json:"groups" protobuf:"bytes,6,rep,name=groups"`
 }
 
-// BindingPhase defines the phase of ProjectPolicy constructor.
+// BindingPhase defines the phase of ProjectPolicyBinding constructor.
 type BindingPhase string
 
 const (
@@ -574,26 +574,26 @@ const (
 	BindingTerminating BindingPhase = "Terminating"
 )
 
-// ProjectPolicyStatus represents information about the status of a ProjectPolicy.
-type ProjectPolicyStatus struct {
+// ProjectPolicyBindingStatus represents information about the status of a ProjectPolicyBinding.
+type ProjectPolicyBindingStatus struct {
 	Phase BindingPhase `json:"phase" protobuf:"bytes,1,opt,name=phase,casttype=BindingPhase"`
 }
 
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ProjectPolicy is the whole list of all ProjectPolicys.
-type ProjectPolicyList struct {
+// ProjectPolicyBindingList is the whole list of all ProjectPolicyBindings.
+type ProjectPolicyBindingList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	// List of policies.
-	Items []ProjectPolicy `json:"items" protobuf:"bytes,2,rep,name=items"`
+	Items []ProjectPolicyBinding `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// PolicyBinding references the request to bind or unbind policies to the role.
-type ProjectPolicyBinding struct {
+// ProjectPolicyBindingRequest references the request to bind or unbind policies to the role.
+type ProjectPolicyBindingRequest struct {
 	metav1.TypeMeta `json:",inline"`
 
 	// Policies holds the policies will bind to the subjects.

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package projectpolicy
+package projectpolicybinding
 
 import (
 	"fmt"
@@ -37,7 +37,7 @@ import (
 	clientset "tkestack.io/tke/api/client/clientset/versioned"
 	authv1informer "tkestack.io/tke/api/client/informers/externalversions/auth/v1"
 	authv1lister "tkestack.io/tke/api/client/listers/auth/v1"
-	"tkestack.io/tke/pkg/auth/controller/projectpolicy/deletion"
+	"tkestack.io/tke/pkg/auth/controller/projectpolicybinding/deletion"
 	authutil "tkestack.io/tke/pkg/auth/util"
 	controllerutil "tkestack.io/tke/pkg/controller"
 	"tkestack.io/tke/pkg/util"
@@ -54,30 +54,30 @@ const (
 	//   so this controller's cleanup can actually clean up all objects
 	projectPolicyDeletionGracePeriod = 5 * time.Second
 
-	controllerName = "projectpolicy-controller"
+	controllerName = "projectpolicybinding-controller"
 )
 
 // Controller is responsible for performing actions dependent upon a policy phase.
 type Controller struct {
 	client             clientset.Interface
 	queue              workqueue.RateLimitingInterface
-	policyLister       authv1lister.ProjectPolicyLister
+	policyLister       authv1lister.ProjectPolicyBindingLister
 	policyListerSynced cache.InformerSynced
 	ruleLister         authv1lister.RuleLister
 	ruleListerSynced   cache.InformerSynced
 	// helper to delete all resources in the policy when the policy is deleted.
-	projectpolicyedResourcesDeleter deletion.ProjectPoliciedResourcesDeleterInterface
+	projectpolicyedResourcesDeleter deletion.ProjectPolicyBindingResourcesDeleterInterface
 	enforcer                        *casbin.SyncedEnforcer
 }
 
 // NewController creates a new projectpolicy controller object.
-func NewController(client clientset.Interface, policyInformer authv1informer.ProjectPolicyInformer, ruleInformer authv1informer.RuleInformer, enforcer *casbin.SyncedEnforcer, resyncPeriod time.Duration, finalizerToken v1.FinalizerName) *Controller {
+func NewController(client clientset.Interface, policyInformer authv1informer.ProjectPolicyBindingInformer, ruleInformer authv1informer.RuleInformer, enforcer *casbin.SyncedEnforcer, resyncPeriod time.Duration, finalizerToken v1.FinalizerName) *Controller {
 	// create the controller so we can inject the enqueue function
 	controller := &Controller{
 		client:                          client,
 		queue:                           workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), controllerName),
 		enforcer:                        enforcer,
-		projectpolicyedResourcesDeleter: deletion.NewProjectPoliciedResourcesDeleter(client.AuthV1().ProjectPolicies(), client.AuthV1(), enforcer, finalizerToken, true),
+		projectpolicyedResourcesDeleter: deletion.NewProjectPolicyBindingResourcesDeleter(client.AuthV1().ProjectPolicyBindings(), client.AuthV1(), enforcer, finalizerToken, true),
 	}
 
 	if client != nil && client.AuthV1().RESTClient().GetRateLimiter() != nil {
@@ -88,10 +88,10 @@ func NewController(client clientset.Interface, policyInformer authv1informer.Pro
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: controller.enqueue,
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				old, ok1 := oldObj.(*v1.ProjectPolicy)
-				cur, ok2 := newObj.(*v1.ProjectPolicy)
+				old, ok1 := oldObj.(*v1.ProjectPolicyBinding)
+				cur, ok2 := newObj.(*v1.ProjectPolicyBinding)
 				if ok1 && ok2 && controller.needsUpdate(old, cur) {
-					log.Info("Update enqueue")
+					log.Info("Update enqueue", log.String("project policy binding", cur.Name))
 					controller.enqueue(newObj)
 				}
 			},
@@ -118,7 +118,7 @@ func (c *Controller) enqueue(obj interface{}) {
 	c.queue.AddAfter(key, projectPolicyDeletionGracePeriod)
 }
 
-func (c *Controller) needsUpdate(old *v1.ProjectPolicy, new *v1.ProjectPolicy) bool {
+func (c *Controller) needsUpdate(old *v1.ProjectPolicyBinding, new *v1.ProjectPolicyBinding) bool {
 	if old.UID != new.UID {
 		return true
 	}
@@ -223,7 +223,7 @@ func (c *Controller) syncItem(key string) error {
 	return err
 }
 
-func (c *Controller) processUpdate(policy *v1.ProjectPolicy, key string) error {
+func (c *Controller) processUpdate(policy *v1.ProjectPolicyBinding, key string) error {
 
 	// start update policy if needed
 	err := c.handlePhase(key, policy)
@@ -233,7 +233,7 @@ func (c *Controller) processUpdate(policy *v1.ProjectPolicy, key string) error {
 	return nil
 }
 
-func (c *Controller) handlePhase(key string, policy *v1.ProjectPolicy) error {
+func (c *Controller) handlePhase(key string, policy *v1.ProjectPolicyBinding) error {
 
 	var errs []error
 
@@ -245,7 +245,7 @@ func (c *Controller) handlePhase(key string, policy *v1.ProjectPolicy) error {
 	return utilerrors.NewAggregate(errs)
 }
 
-func (c *Controller) handleSubjects(key string, policy *v1.ProjectPolicy) error {
+func (c *Controller) handleSubjects(key string, policy *v1.ProjectPolicyBinding) error {
 	if policy.Spec.PolicyID == "" || policy.Spec.ProjectID == "" {
 		log.Info("PolicyID or projectID is empty for projectPolicy", log.String("projectpolicy", policy.Name))
 		return nil

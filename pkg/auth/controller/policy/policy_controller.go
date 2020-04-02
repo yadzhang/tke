@@ -92,7 +92,7 @@ func NewController(client clientset.Interface, policyInformer authv1informer.Pol
 				old, ok1 := oldObj.(*v1.Policy)
 				cur, ok2 := newObj.(*v1.Policy)
 				if ok1 && ok2 && controller.needsUpdate(old, cur) {
-					log.Info("Update enqueue")
+					log.Info("Update enqueue", log.String("policy", cur.Name))
 					controller.enqueue(newObj)
 				}
 			},
