@@ -37277,6 +37277,12 @@ func schema_tke_api_auth_v1_ProjectPolicyBindingRequest(ref common.ReferenceCall
 							Format:      "",
 						},
 					},
+					"tenantID": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
 					"policies": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Policies holds the policies will bind to the subjects.",

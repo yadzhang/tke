@@ -568,13 +568,15 @@ message ProjectPolicyBindingList {
 
 // ProjectPolicyBindingRequest references the request to bind or unbind policies to the role.
 message ProjectPolicyBindingRequest {
+  optional string tenantID = 1;
+
   // Policies holds the policies will bind to the subjects.
   // +optional
-  repeated string policies = 1;
+  repeated string policies = 2;
 
-  repeated Subject users = 2;
+  repeated Subject users = 3;
 
-  repeated Subject groups = 3;
+  repeated Subject groups = 4;
 }
 
 // ProjectPolicyBindingSpec defines the desired identities of ProjectPolicyBindingSpec document in this set.

@@ -1821,6 +1821,7 @@ func Convert_auth_ProjectPolicyBindingList_To_v1_ProjectPolicyBindingList(in *au
 }
 
 func autoConvert_v1_ProjectPolicyBindingRequest_To_auth_ProjectPolicyBindingRequest(in *ProjectPolicyBindingRequest, out *auth.ProjectPolicyBindingRequest, s conversion.Scope) error {
+	out.TenantID = in.TenantID
 	out.Policies = *(*[]string)(unsafe.Pointer(&in.Policies))
 	out.Users = *(*[]auth.Subject)(unsafe.Pointer(&in.Users))
 	out.Groups = *(*[]auth.Subject)(unsafe.Pointer(&in.Groups))
@@ -1833,6 +1834,7 @@ func Convert_v1_ProjectPolicyBindingRequest_To_auth_ProjectPolicyBindingRequest(
 }
 
 func autoConvert_auth_ProjectPolicyBindingRequest_To_v1_ProjectPolicyBindingRequest(in *auth.ProjectPolicyBindingRequest, out *ProjectPolicyBindingRequest, s conversion.Scope) error {
+	out.TenantID = in.TenantID
 	out.Policies = *(*[]string)(unsafe.Pointer(&in.Policies))
 	out.Users = *(*[]Subject)(unsafe.Pointer(&in.Users))
 	out.Groups = *(*[]Subject)(unsafe.Pointer(&in.Groups))
@@ -1998,9 +2000,9 @@ func Convert_v1_RoleSpec_To_auth_RoleSpec(in *RoleSpec, out *auth.RoleSpec, s co
 
 func autoConvert_auth_RoleSpec_To_v1_RoleSpec(in *auth.RoleSpec, out *RoleSpec, s conversion.Scope) error {
 	out.Finalizers = *(*[]FinalizerName)(unsafe.Pointer(&in.Finalizers))
-	out.ProjectID = in.ProjectID
 	out.DisplayName = in.DisplayName
 	out.TenantID = in.TenantID
+	out.ProjectID = in.ProjectID
 	out.Username = in.Username
 	out.Description = in.Description
 	out.Policies = *(*[]string)(unsafe.Pointer(&in.Policies))

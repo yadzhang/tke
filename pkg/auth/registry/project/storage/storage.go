@@ -36,6 +36,7 @@ import (
 type Storage struct {
 	Project *REST
 	User    *UserREST
+	Group   *GroupREST
 	Policy  *PolicyREST
 
 	Binding   *BindingREST
@@ -43,10 +44,11 @@ type Storage struct {
 }
 
 // NewStorage returns a Storage object that will work against configmap.
-func NewStorage(_ genericregistry.RESTOptionsGetter, authClient authinternalclient.AuthInterface,  enforcer *casbin.SyncedEnforcer) *Storage {
+func NewStorage(_ genericregistry.RESTOptionsGetter, authClient authinternalclient.AuthInterface, enforcer *casbin.SyncedEnforcer) *Storage {
 	return &Storage{
 		Project:   &REST{},
-		User:      &UserREST{authClient},
+		User:      &UserREST{&BindingREST{authClient}, &UnBindingREST{authClient}, authClient},
+		Group:     &GroupREST{&BindingREST{authClient}, &UnBindingREST{authClient}, authClient},
 		Policy:    &PolicyREST{authClient},
 		Binding:   &BindingREST{authClient},
 		UnBinding: &UnBindingREST{authClient},
@@ -56,8 +58,6 @@ func NewStorage(_ genericregistry.RESTOptionsGetter, authClient authinternalclie
 // REST implements a RESTStorage for configmap against etcd.
 type REST struct {
 	rest.Storage
-
-
 }
 
 func (r *REST) NamespaceScoped() bool {

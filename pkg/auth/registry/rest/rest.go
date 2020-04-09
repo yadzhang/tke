@@ -136,6 +136,7 @@ func (s *StorageProvider) v1Storage(apiResourceConfigSource serverstorage.APIRes
 		projectRest := projectstorage.NewStorage(restOptionsGetter, authClient, s.Enforcer)
 		storageMap["projects"] = projectRest.Project
 		storageMap["projects/users"] = projectRest.User
+		storageMap["projects/groups"] = projectRest.Group
 		storageMap["projects/policies"] = projectRest.Policy
 		storageMap["projects/binding"] = projectRest.Binding
 		storageMap["projects/unbinding"] = projectRest.UnBinding

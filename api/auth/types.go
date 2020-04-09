@@ -26,8 +26,11 @@ const (
 	// KeywordQueryTag is a field tag to query object that contains the keyword.
 	KeywordQueryTag string = "keyword"
 
-	// QueryLimitTag is a field tag to query a maximum number of objects for a list call.
-	QueryLimitTag string = "limit"
+	// LimitQueryTag is a field tag to query a maximum number of objects for a list call.
+	LimitQueryTag string = "limit"
+
+	// PolicyQueryTag is a field tag to query localidentities with policies in extra.
+	PolicyQueryTag string = "policy"
 
 	// IssuerName is the name of issuer location.
 	IssuerName = "oidc"
@@ -548,6 +551,7 @@ type ProjectPolicyBindingSpec struct {
 type ProjectPolicyBindingRequest struct {
 	metav1.TypeMeta
 
+	TenantID string
 	// Policies holds the policies will bind to the subjects.
 	// +optional
 	Policies []string
@@ -737,9 +741,9 @@ const (
 type RoleSpec struct {
 	Finalizers []FinalizerName
 
-	ProjectID   string
 	DisplayName string
 	TenantID    string
+	ProjectID   string
 
 	// Username is Creator
 	Username    string
