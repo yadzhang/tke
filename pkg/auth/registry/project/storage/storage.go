@@ -68,17 +68,17 @@ var _ rest.Scoper = &REST{}
 
 // New returns an empty object that can be used with Create and Update after request data has been put into it.
 func (r *REST) New() runtime.Object {
-	return &auth.Dummy{}
+	return &auth.ProjectBelongs{}
 }
 
 // NewList returns an empty object that can be used with the List call.
 func (r *REST) NewList() runtime.Object {
-	return &auth.Dummy{}
+	return &auth.ProjectBelongs{}
 }
 
 // Create creates a new version of a resource.
 func (r *REST) Create(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error) {
-	return &auth.Dummy{}, nil
+	return &auth.ProjectBelongs{}, nil
 }
 
 func (r *REST) List(ctx context.Context, options *metainternal.ListOptions) (runtime.Object, error) {

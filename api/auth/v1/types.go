@@ -597,31 +597,13 @@ type ProjectPolicyBindingRequest struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Dummy is a empty struct.
-type Dummy struct {
+type ProjectBelongs struct {
 	metav1.TypeMeta `json:",inline"`
 
-	OwnerProjects  []string `json:"ownerProjects" protobuf:"bytes,1,rep,name=ownerProjects"`
-	MemberProjects []string `json:"memberProjects" protobuf:"bytes,2,rep,name=memberProjects"`
+	TenantID        string                `protobuf:"bytes,1,opt,name=tenantID"`
+	ManagedProjects map[string]ExtraValue `json:"managedProjects" protobuf:"bytes,2,rep,name=managedProjects"`
+	MemberdProjects map[string]ExtraValue `json:"memberdProjects" protobuf:"bytes,3,rep,name=memberdProjects"`
 }
-
-const (
-	DefaultRuleModel = `
-[request_definition]
-r = sub, obj, act
-
-[policy_definition]
-p = sub, obj, act, eft
-
-[role_definition]
-g = _, _
-
-[policy_effect]
-e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
-
-[matchers]
-m = g(r.sub, p.sub)  && keyMatchCustom(r.obj, p.obj) && keyMatchCustom(r.act, p.act)
-`
-)
 
 // +genclient
 // +genclient:nonNamespaced

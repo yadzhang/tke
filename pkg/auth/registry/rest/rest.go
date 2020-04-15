@@ -170,6 +170,7 @@ func (s *StorageProvider) v1Storage(apiResourceConfigSource serverstorage.APIRes
 		storageMap["users"] = userRest.User
 		storageMap["users/policies"] = userRest.Policy
 		storageMap["users/roles"] = userRest.Role
+		storageMap["users/projects"] = userRest.Project
 
 		groupRest := groupstorage.NewStorage(restOptionsGetter, authClient, s.Enforcer)
 		storageMap["groups"] = groupRest.Group

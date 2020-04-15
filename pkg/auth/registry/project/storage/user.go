@@ -22,6 +22,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -37,6 +38,7 @@ import (
 	"tkestack.io/tke/pkg/apiserver/authentication"
 	"tkestack.io/tke/pkg/apiserver/filter"
 	"tkestack.io/tke/pkg/auth/util"
+	genericfilter "tkestack.io/tke/pkg/platform/apiserver/filter"
 	genericutil "tkestack.io/tke/pkg/util"
 	"tkestack.io/tke/pkg/util/log"
 )
@@ -62,6 +64,7 @@ func (r *UserREST) NewList() runtime.Object {
 
 // List selects resources in the storage which match to the selector. 'options' can be nil.
 func (r *UserREST) List(ctx context.Context, options *metainternal.ListOptions) (runtime.Object, error) {
+	keyword := genericfilter.FuzzyResourceFrom(ctx)
 	requestInfo, ok := request.RequestInfoFrom(ctx)
 	if !ok {
 		return nil, errors.NewBadRequest("unable to get request info from context")
@@ -72,8 +75,6 @@ func (r *UserREST) List(ctx context.Context, options *metainternal.ListOptions) 
 		projectID = requestInfo.Name
 	}
 
-	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
-
 	projectPolicyList, err := r.authClient.ProjectPolicyBindings().List(metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("spec.projectID=%s", projectID),
 	})
@@ -82,18 +83,24 @@ func (r *UserREST) List(ctx context.Context, options *metainternal.ListOptions) 
 		return nil, err
 	}
 
+	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
 	if tenantID == "" && len(projectPolicyList.Items) > 0 {
 		tenantID = projectPolicyList.Items[0].Spec.TenantID
 	}
 
 	userPolicyMap := getUserPolicyMap(projectPolicyList)
-
 	userList := &auth.UserList{}
 	policyNameMap := map[string]string{}
 	for userID, policyIDs := range userPolicyMap {
 		user, err := r.authClient.Users().Get(util.CombineTenantAndName(tenantID, userID), metav1.GetOptions{})
 		if err != nil {
 			log.Error("Get user failed", log.String("id", userID), log.Err(err))
+			continue
+		}
+
+		if keyword != "" && user.Spec.ID != keyword &&
+			!strings.Contains(user.Spec.Name, keyword) &&
+			!strings.Contains(user.Spec.DisplayName, keyword) {
 			continue
 		}
 
@@ -144,8 +151,6 @@ func (r *UserREST) Create(ctx context.Context, obj runtime.Object, createValidat
 		projectID = requestInfo.Name
 	}
 
-	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
-
 	projectPolicyList, err := r.authClient.ProjectPolicyBindings().List(metav1.ListOptions{
 		FieldSelector: fmt.Sprintf("spec.projectID=%s", projectID),
 	})
@@ -173,7 +178,6 @@ func (r *UserREST) Create(ctx context.Context, obj runtime.Object, createValidat
 			continue
 		}
 		unbind := auth.ProjectPolicyBindingRequest{
-			TenantID: tenantID,
 			Policies: removed,
 			Users: []auth.Subject{
 				subj,

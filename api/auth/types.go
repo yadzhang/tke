@@ -778,12 +778,14 @@ type PolicyBinding struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Dummy is a empty struct.
-type Dummy struct {
+// ProjectBelongs contains projects of user belongs.
+type ProjectBelongs struct {
 	metav1.TypeMeta
 
-	OwnerProjects  []string
-	MemberProjects []string
+	TenantID string
+	// project and roles in project
+	ManagedProjects map[string]ExtraValue
+	MemberdProjects map[string]ExtraValue
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
