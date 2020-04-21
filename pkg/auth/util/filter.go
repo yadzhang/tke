@@ -20,10 +20,12 @@ package util
 
 import (
 	"context"
+
 	"k8s.io/apimachinery/pkg/fields"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metainternal "k8s.io/apimachinery/pkg/apis/meta/internalversion"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"tkestack.io/tke/api/auth"
 	v1 "tkestack.io/tke/api/auth/v1"
