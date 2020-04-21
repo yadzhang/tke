@@ -108,7 +108,7 @@ type LocalIdentityStatus struct {
 
 	// The last time the local identity was updated.
 	// +optional
-	LastUpdateTime metav1.Time `protobuf:"bytes,2,opt,name=lastUpdateTime"`
+	LastUpdateTime metav1.Time `json:"lastUpdateTime" protobuf:"bytes,2,opt,name=lastUpdateTime"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

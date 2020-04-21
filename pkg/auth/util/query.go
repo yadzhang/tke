@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	defaultQueryLimit = 50
+	defaultQueryLimit = 1000
 )
 
 func ParseQueryKeywordAndLimit(options *metainternal.ListOptions) (string, int) {
@@ -41,6 +41,10 @@ func ParseQueryKeywordAndLimit(options *metainternal.ListOptions) (string, int) 
 		if li, err := strconv.Atoi(limitStr); err == nil && li >= 0 {
 			limit = li
 		}
+
+		removeFromField(options, auth.KeywordQueryTag)
+		removeFromField(options, auth.LimitQueryTag)
+
 	}
 
 	return keyword, limit

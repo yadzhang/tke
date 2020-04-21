@@ -36766,7 +36766,7 @@ func schema_tke_api_auth_v1_LocalIdentityStatus(ref common.ReferenceCallback) co
 							Format: "",
 						},
 					},
-					"LastUpdateTime": {
+					"lastUpdateTime": {
 						SchemaProps: spec.SchemaProps{
 							Description: "The last time the local identity was updated.",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),

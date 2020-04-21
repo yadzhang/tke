@@ -22,6 +22,11 @@ import (
 	"context"
 	"fmt"
 
+	util2 "tkestack.io/tke/pkg/auth/util"
+	"tkestack.io/tke/pkg/util/log"
+
+	"k8s.io/apimachinery/pkg/fields"
+
 	metainternal "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,6 +34,7 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	"tkestack.io/tke/api/business"
 	businessinternalclient "tkestack.io/tke/api/client/clientset/internalversion/typed/business/internalversion"
+	authversionedclient "tkestack.io/tke/api/client/clientset/versioned/typed/auth/v1"
 	"tkestack.io/tke/pkg/apiserver/authentication"
 	"tkestack.io/tke/pkg/util"
 )
@@ -39,10 +45,11 @@ type Storage struct {
 }
 
 // NewStorage returns a Storage object that will work against projects.
-func NewStorage(_ genericregistry.RESTOptionsGetter, businessClient *businessinternalclient.BusinessClient) *Storage {
+func NewStorage(_ genericregistry.RESTOptionsGetter, businessClient *businessinternalclient.BusinessClient, authClient authversionedclient.AuthV1Interface) *Storage {
 	return &Storage{
 		Portal: &REST{
 			businessClient: businessClient,
+			authClient:     authClient,
 		},
 	}
 }
@@ -50,6 +57,7 @@ func NewStorage(_ genericregistry.RESTOptionsGetter, businessClient *businessint
 // REST implements a RESTStorage for user setting.
 type REST struct {
 	businessClient *businessinternalclient.BusinessClient
+	authClient     authversionedclient.AuthV1Interface
 }
 
 var _ rest.ShortNamesProvider = &REST{}
@@ -96,6 +104,33 @@ func (r *REST) List(ctx context.Context, options *metainternal.ListOptions) (run
 		if util.InStringSlice(platform.Spec.Administrators, username) {
 			administrator = true
 			break
+		}
+	}
+
+	if !administrator && r.authClient != nil {
+		usersSelector := fields.AndSelectors(
+			fields.OneTermEqualSelector("keyword", username),
+			fields.OneTermEqualSelector("policy", "true"),
+			fields.OneTermEqualSelector("spec.tenantID", tenantID),
+		)
+
+		log.Info("userSelecto", log.String("selector", usersSelector.String()))
+		userListOpt := v1.ListOptions{
+			FieldSelector: usersSelector.String(),
+		}
+
+		userList, err := r.authClient.Users().List(userListOpt)
+		if err != nil {
+			return nil, err
+		}
+		log.Info("userList", log.Any("userList", userList))
+		for _, user := range userList.Items {
+			if user.Spec.Name == username {
+				if util2.IsPlatformAdministrator(user) {
+					administrator = true
+				}
+				break
+			}
 		}
 	}
 

@@ -346,7 +346,7 @@ func (LocalIdentitySpec) SwaggerDoc() map[string]string {
 
 var map_LocalIdentityStatus = map[string]string{
 	"":               "LocalIdentityStatus is a description of an identity status.",
-	"LastUpdateTime": "The last time the local identity was updated.",
+	"lastUpdateTime": "The last time the local identity was updated.",
 }
 
 func (LocalIdentityStatus) SwaggerDoc() map[string]string {

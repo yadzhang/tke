@@ -229,6 +229,7 @@ func AddFieldLabelConversionsForUser(scheme *runtime.Scheme) error {
 			switch label {
 			case "keyword",
 				"limit",
+				"policy",
 				"spec.tenantID":
 				return label, value, nil
 			default:

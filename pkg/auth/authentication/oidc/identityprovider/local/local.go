@@ -70,18 +70,16 @@ type identityProvider struct {
 	tenantID       string
 	administrators []string
 
+	authClient          authinternalclient.AuthInterface
 	localIdentityLister authv1lister.LocalIdentityLister
 	localGroupLister    authv1lister.LocalGroupLister
 }
 
-func NewDefaultIdentityProvider(tenantID string, administrators []string, versionInformers versionedinformers.SharedInformerFactory) (identityprovider.IdentityProvider, error) {
-	if versionInformers == nil {
-		return nil, fmt.Errorf("versioned informers of local type idp is nil")
-	}
-
+func NewDefaultIdentityProvider(tenantID string, administrators []string, authClient authinternalclient.AuthInterface, versionInformers versionedinformers.SharedInformerFactory) (identityprovider.IdentityProvider, error) {
 	return &identityProvider{
 		tenantID:            tenantID,
 		administrators:      administrators,
+		authClient:          authClient,
 		localIdentityLister: versionInformers.Auth().V1().LocalIdentities().Lister(),
 		localGroupLister:    versionInformers.Auth().V1().LocalGroups().Lister(),
 	}, nil
@@ -206,7 +204,7 @@ func (c *identityProvider) GetUser(ctx context.Context, name string, options *me
 		return nil, apierrors.NewBadRequest("must in the same tenant")
 	}
 
-	localIdentity, err := c.localIdentityLister.Get(name)
+	localIdentity, err := c.authClient.LocalIdentities().Get(name, *options)
 	if err != nil {
 		return nil, err
 	}
@@ -223,38 +221,29 @@ func (c *identityProvider) GetUser(ctx context.Context, name string, options *me
 func (c *identityProvider) ListUsers(ctx context.Context, options *metainternal.ListOptions) (*auth.UserList, error) {
 	keyword, limit := util.ParseQueryKeywordAndLimit(options)
 
-	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
-	if tenantID != "" && tenantID != c.tenantID {
-		return nil, apierrors.NewBadRequest("must in the same tenant")
-	}
-
-	allList, err := c.localIdentityLister.List(labels.Everything())
+	v1Opt := util.PredicateV1ListOptions(c.tenantID, options)
+	log.Info("v1Opts", log.Any("options", v1Opt))
+	localIdentityList, err := c.authClient.LocalIdentities().List(*v1Opt)
 	if err != nil {
 		return nil, err
 	}
 
-	var localIdentityList []*authv1.LocalIdentity
-	for i, item := range allList {
-		if item.Spec.TenantID == c.tenantID {
-			localIdentityList = append(localIdentityList, allList[i])
-		}
-	}
-
 	if keyword != "" {
-		var newList []*authv1.LocalIdentity
-		for i, val := range localIdentityList {
+		var newList []auth.LocalIdentity
+		for _, val := range localIdentityList.Items {
 			if strings.Contains(val.Name, keyword) || strings.Contains(val.Spec.Username, keyword) || strings.Contains(val.Spec.DisplayName, keyword) {
-				newList = append(newList, localIdentityList[i])
+				newList = append(newList, val)
 			}
 		}
-		localIdentityList = newList
+
+		localIdentityList.Items = newList
 	}
 
-	items := localIdentityList[0:min(len(localIdentityList), limit)]
+	resultList := localIdentityList.Items[0:min(len(localIdentityList.Items), limit)]
 
 	userList := auth.UserList{}
-	for _, item := range items {
-		user := convertToUser(item)
+	for _, item := range resultList {
+		user := convertToUser(&item)
 		userList.Items = append(userList.Items, user)
 	}
 
@@ -283,9 +272,7 @@ func (c *identityProvider) GetGroup(ctx context.Context, name string, options *m
 
 // List is an object that can list users that match the provided field and label criteria.
 func (c *identityProvider) ListGroups(ctx context.Context, options *metainternal.ListOptions) (*auth.GroupList, error) {
-
 	keyword, limit := util.ParseQueryKeywordAndLimit(options)
-
 	_, tenantID := authentication.GetUsernameAndTenantID(ctx)
 	if tenantID != "" && tenantID != c.tenantID {
 		return nil, apierrors.NewBadRequest("must in the same tenant")
@@ -326,7 +313,24 @@ func (c *identityProvider) ListGroups(ctx context.Context, options *metainternal
 	return &groupList, nil
 }
 
-func convertToUser(localIdentity *authv1.LocalIdentity) auth.User {
+func convertV1ToUser(localIdentity *authv1.LocalIdentity) auth.User {
+	return auth.User{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: localIdentity.ObjectMeta.Name,
+		},
+		Spec: auth.UserSpec{
+			ID:          localIdentity.ObjectMeta.Name,
+			Name:        localIdentity.Spec.Username,
+			DisplayName: localIdentity.Spec.DisplayName,
+			Email:       localIdentity.Spec.Email,
+			PhoneNumber: localIdentity.Spec.PhoneNumber,
+			TenantID:    localIdentity.Spec.TenantID,
+			Extra:       localIdentity.Spec.Extra,
+		},
+	}
+}
+
+func convertToUser(localIdentity *auth.LocalIdentity) auth.User {
 	return auth.User{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: localIdentity.ObjectMeta.Name,

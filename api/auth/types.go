@@ -632,7 +632,7 @@ const (
 r = sub, dom, obj, act
 
 [policy_definition]
-p = sub, dom, obj, act
+p = sub, dom, obj, act, eft
 
 [role_definition]
 g = _, _, _
@@ -641,7 +641,7 @@ g = _, _, _
 e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 
 [matchers]
-m = g(r.sub, p.sub, p.dom) && keyMatchCustom(r.obj, p.obj) && keyMatchCustom(r.act, p.act)
+m = g(r.sub, p.sub, r.dom) && keyMatchCustom(r.obj, p.obj) && keyMatchCustom(r.act, p.act)
 `
 )
 
